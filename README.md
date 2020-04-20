@@ -11,7 +11,7 @@ The package also allows you to store and retrieve large files from elsewhere on 
 ## Limitations
 
 CarbonitePersist is designed to be a simple file manager without advanced features. Its simplicily leads to a number of limitations that should be kept in mind:
-* While it provides async methods, it does not implement any locks on collections while they're in use. Since each entity is a separate file on the disk, it sill allows for simultaneous access of different collections. However, simultaneous accessing of files within the same collection may result in conflicts. You should avoid modifying the contents of the same collection in multiple threads.
+* While it provides TPL  methods for asynchronous programming, it does not implement any locks on collections while they're in use. Since each entity is a separate file on the disk, it sill allows for simultaneous access of different collections. However, simultaneous accessing of files within the same collection may result in conflicts. You should avoid modifying the contents of the same collection in multiple threads.
 * Since the collections are, by design, easily modifyable in any file manager, use caution when modifying the files manually. Changing the structure or naming scheme of the files in the folder structure may cause errors.
 
 ## Usage
