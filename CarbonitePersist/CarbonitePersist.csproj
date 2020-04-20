@@ -10,8 +10,9 @@
     <AssemblyVersion>0.1.0.0</AssemblyVersion>
     <FileVersion>0.1.0.0</FileVersion>
     <PackageReleaseNotes>* First release</PackageReleaseNotes>
-    <Version>0.1.0.0</Version>
+    <Version>0.1.0</Version>
     <Copyright>Copyright 2020 Kier von Konigslow</Copyright>
+    <RepositoryUrl>https://github.com/kvonkoni/CarbonitePersist</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
