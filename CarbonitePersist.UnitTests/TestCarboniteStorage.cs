@@ -49,13 +49,16 @@ namespace CarbonitePersist.UnitTests
 
             var files = await stor.GetAllAsync();
 
-            Assert.Equal(2, files.Count);
+            Assert.Equal(3, files.Count);
 
             Assert.Equal(1, files[0].Id);
             Assert.Equal("This is a test file.docx", files[0].Filename);
 
             Assert.Equal(2, files[1].Id);
             Assert.Equal("broken.pdf", files[1].Filename);
+
+            Assert.Equal(3, files[2].Id);
+            Assert.Equal("letter.txt", files[2].Filename);
         }
 
         [Fact]

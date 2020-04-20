@@ -120,6 +120,7 @@ namespace CarbonitePersist.ManualTests
             var fileStore = ct.GetStorage();
             await fileStore.UploadAsync(1, @"C:\Temp\filesource\This is a test file.docx");
             await fileStore.UploadAsync(2, @"C:\Temp\filesource\broken.pdf");
+            await fileStore.UploadAsync(3, @"C:\Temp\filesource\letter.txt");
 
             var metadata = await fileStore.GetAllAsync();
 
