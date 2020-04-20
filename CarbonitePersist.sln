@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarbonitePersist", "Carboni
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarbonitePersist.ManualTests", "CarbonitePersist.ManualTests\CarbonitePersist.ManualTests.csproj", "{5BF979CC-0D99-45D7-976A-A0989A466CCB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarbonitePersist.UnitTests", "CarbonitePersist.UnitTests\CarbonitePersist.UnitTests.csproj", "{4BB07B4A-4AFD-4B38-B8BF-BED2B5EC5CD2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarbonitePersist.IntegrationTests", "CarbonitePersist.UnitTests\CarbonitePersist.IntegrationTests.csproj", "{4BB07B4A-4AFD-4B38-B8BF-BED2B5EC5CD2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
