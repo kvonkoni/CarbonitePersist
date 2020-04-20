@@ -43,7 +43,7 @@ namespace CarbonitePersist
                 Id = id,
                 Filename = Path.GetFileName(source)
             };
-            File.Copy(source, Path.Combine(_ct.storagePath, metadata.FilenameInStorage), true);
+            File.Copy(source, Path.Combine(_ct.storagePath, $"{id}.bin"), true);
             _log.Info($"Copied {source} into Carbonite");
             WriteMetadataToXml(metadata);
         }
@@ -59,7 +59,7 @@ namespace CarbonitePersist
 
         private FileStorageMetadata ReadMetadataFromXml(string path)
         {
-            using (var stream = new FileStream(Path.Combine(_ct.storagePath, path), FileMode.Open))
+            using (var stream = new FileStream(Path.Combine(_ct.storageMetadataPath, path), FileMode.Open))
             {
                 return (FileStorageMetadata)serializer.Deserialize(stream);
             }
@@ -136,7 +136,7 @@ namespace CarbonitePersist
             try
             {
                 await Task.Run(() => {
-                    foreach (string file in storageManifest)
+                    foreach (string file in storageMetadataManifest)
                     {
                         if (cancellationToken.IsCancellationRequested)
                             throw new OperationCanceledException();

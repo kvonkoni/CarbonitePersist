@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NLog;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,6 +29,17 @@ namespace CarbonitePersist.ManualTests
 
         public static async Task Main()
         {
+            var config = new NLog.Config.LoggingConfiguration();
+
+            // Targets where to log to: File and Console
+            var logconsole = new NLog.Targets.ConsoleTarget("logconsole");
+
+            // Rules for mapping loggers to targets            
+            config.AddRule(LogLevel.Trace, LogLevel.Fatal, logconsole);
+
+            // Apply config           
+            LogManager.Configuration = config;
+
             var customerA = new Customer
             {
                 Id = 2,
@@ -104,6 +116,14 @@ namespace CarbonitePersist.ManualTests
 
             foreach (Order o in await orderCollection.GetAllAsync())
                 Console.WriteLine($"Order {o.Id} for customer {o.Customer.Firstname} {o.Customer.Lastname} came to a total of {o.Total}");
+
+            var fileStore = ct.GetStorage();
+            await fileStore.UploadAsync(1, @"C:\Temp\filesource\permissions.docx");
+
+            var metadata = await fileStore.GetAllAsync();
+
+            foreach (FileStorageMetadata file in metadata)
+                Console.WriteLine($"There is a file called {file.Filename} with ID {file.Id} in storage");
         }
     }
 }

@@ -67,5 +67,10 @@ namespace CarbonitePersist
         {
             return new CarboniteCollection<T>(this, name);
         }
+
+        public CarboniteStorage GetStorage()
+        {
+            return new CarboniteStorage(this);
+        }
     }
 }
