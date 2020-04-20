@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarbonitePersist", "Carboni
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarbonitePersist.ManualTests", "CarbonitePersist.ManualTests\CarbonitePersist.ManualTests.csproj", "{5BF979CC-0D99-45D7-976A-A0989A466CCB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarbonitePersist.IntegrationTests", "CarbonitePersist.UnitTests\CarbonitePersist.IntegrationTests.csproj", "{4BB07B4A-4AFD-4B38-B8BF-BED2B5EC5CD2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CarbonitePersist.IntegrationTests", "CarbonitePersist.IntegrationTests\CarbonitePersist.IntegrationTests.csproj", "{A5508743-C4E9-4880-951F-ECD0FAD7BE33}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,10 +29,10 @@ Global
 		{5BF979CC-0D99-45D7-976A-A0989A466CCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5BF979CC-0D99-45D7-976A-A0989A466CCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5BF979CC-0D99-45D7-976A-A0989A466CCB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4BB07B4A-4AFD-4B38-B8BF-BED2B5EC5CD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4BB07B4A-4AFD-4B38-B8BF-BED2B5EC5CD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4BB07B4A-4AFD-4B38-B8BF-BED2B5EC5CD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4BB07B4A-4AFD-4B38-B8BF-BED2B5EC5CD2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5508743-C4E9-4880-951F-ECD0FAD7BE33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5508743-C4E9-4880-951F-ECD0FAD7BE33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5508743-C4E9-4880-951F-ECD0FAD7BE33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5508743-C4E9-4880-951F-ECD0FAD7BE33}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
