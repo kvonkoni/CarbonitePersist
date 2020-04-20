@@ -126,7 +126,7 @@ namespace CarbonitePersist.UnitTests
         }
 
         [Fact]
-        public async Task TestDeleteFileAsync()
+        public async Task TestDeleteAsync()
         {
             var database = Guid.NewGuid().ToString();
             var path = Path.Combine(Path.GetTempPath(), database);
@@ -137,7 +137,7 @@ namespace CarbonitePersist.UnitTests
 
             await stor.UploadAsync(new List<object> { 1, 2 }, new List<string> { $"{Path.Combine(fileSource, "This is a test file.docx")}", $"{Path.Combine(fileSource, "broken.pdf")}" });
 
-            await stor.DeleteFileAsync(1);
+            await stor.DeleteAsync(1);
 
             var files = await stor.GetAllAsync();
 
@@ -148,7 +148,7 @@ namespace CarbonitePersist.UnitTests
         }
 
         [Fact]
-        public async Task TestDeleteFilesAsync()
+        public async Task TestDeleteMultipleAsync()
         {
             var database = Guid.NewGuid().ToString();
             var path = Path.Combine(Path.GetTempPath(), database);
@@ -159,7 +159,7 @@ namespace CarbonitePersist.UnitTests
 
             await stor.UploadAsync(new List<object> { 1, 2 }, new List<string> { $"{Path.Combine(fileSource, "This is a test file.docx")}", $"{Path.Combine(fileSource, "broken.pdf")}" });
 
-            await stor.DeleteFilesAsync(new List<object> { 1, 2 });
+            await stor.DeleteMultipleAsync(new List<object> { 1, 2 });
 
             var files = await stor.GetAllAsync();
 

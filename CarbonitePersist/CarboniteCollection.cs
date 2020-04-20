@@ -58,9 +58,14 @@ namespace CarbonitePersist
             }
         }
 
-        private string FindFileFromId(object id)
+        private string FindFileById(object id)
         {
             return collectionManifest.Find(x => Path.GetFileName(x).Equals($"{id}.xml"));
+        }
+
+        private void DeleteFileById(object id)
+        {
+            File.Delete(FindFileById(id));
         }
 
         private T ReadFromXml(string path)
@@ -70,11 +75,6 @@ namespace CarbonitePersist
                 var entity = (TEntity<T>)serializer.Deserialize(stream);
                 return entity.Entity;
             }
-        }
-
-        private void DeleteFileFromId(object id)
-        {
-            File.Delete(FindFileFromId(id));
         }
         
         public async Task InsertAsync(T entity, CancellationToken cancellationToken = default)
@@ -152,7 +152,7 @@ namespace CarbonitePersist
         {
             try
             {
-                return await Task.Run(() =>ReadFromXml(FindFileFromId(id))).ConfigureAwait(false);
+                return await Task.Run(() =>ReadFromXml(FindFileById(id))).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -173,7 +173,7 @@ namespace CarbonitePersist
                         if (cancellationToken.IsCancellationRequested)
                             throw new OperationCanceledException();
 
-                        results.Add(ReadFromXml(FindFileFromId(id)));
+                        results.Add(ReadFromXml(FindFileById(id)));
                     }
                 }).ConfigureAwait(false);
                 return results;
@@ -183,6 +183,31 @@ namespace CarbonitePersist
                 _log.Error(e);
                 throw e;
             }
+        }
+
+        public async Task DeleteAsync(object id, CancellationToken cancellationToken = default)
+        {
+            await Task.Run(() =>
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    throw new OperationCanceledException();
+
+                DeleteFileById(id);
+            }).ConfigureAwait(false);
+        }
+
+        public async Task DeleteMultipleAsync(List<object> ids, CancellationToken cancellationToken = default)
+        {
+            await Task.Run(() =>
+            {
+                foreach (object id in ids)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                        throw new OperationCanceledException();
+
+                    DeleteFileById(id);
+                }
+            }).ConfigureAwait(false);
         }
     }
 }

@@ -48,12 +48,6 @@ namespace CarbonitePersist
             WriteMetadataToXml(metadata);
         }
 
-        private void DeleteFileInStorage(object id)
-        {
-            File.Delete(FindMetadataFromId(id));
-            File.Delete(FindFileFromId(id));
-        }
-
         private void WriteMetadataToXml(FileStorageMetadata metadata)
         {
             using (var writer = new StreamWriter(Path.Combine(_ct.storageMetadataPath, $"{metadata.Id}.xml")))
@@ -76,7 +70,7 @@ namespace CarbonitePersist
             File.Copy(source, destination, overwrite);
         }
 
-        private string FindFileFromId(object id)
+        private string FindFileById(object id)
         {
             return storageManifest.Find(x => Path.GetFileName(x).Equals($"{id}.bin"));
         }
@@ -84,6 +78,12 @@ namespace CarbonitePersist
         private string FindMetadataFromId(object id)
         {
             return storageMetadataManifest.Find(x => Path.GetFileName(x).Equals($"{id}.xml"));
+        }
+
+        private void DeleteFileInStorageById(object id)
+        {
+            File.Delete(FindMetadataFromId(id));
+            File.Delete(FindFileById(id));
         }
 
         public async Task UploadAsync(object id, string source, CancellationToken cancellationToken = default)
@@ -199,7 +199,7 @@ namespace CarbonitePersist
 
         public async Task DownloadAsync(object id, string destination, bool overwrite = false)
         {
-            await Task.Run(() => RetrieveFileFromStorage(FindFileFromId(id), destination, overwrite)).ConfigureAwait(false);
+            await Task.Run(() => RetrieveFileFromStorage(FindFileById(id), destination, overwrite)).ConfigureAwait(false);
         }
 
         public async Task DownloadAsync(List<object> ids, List<string> destinations, bool overwrite = false)
@@ -212,16 +212,16 @@ namespace CarbonitePersist
 
             await Task.Run(() => {
                 for (int i = 0; i < destinations.Count; i++)
-                    RetrieveFileFromStorage(FindFileFromId(ids[i]), destinations[i], overwrite);
+                    RetrieveFileFromStorage(FindFileById(ids[i]), destinations[i], overwrite);
                 }).ConfigureAwait(false);
         }
 
-        public async Task DeleteFileAsync(object id, CancellationToken cancellationToken = default)
+        public async Task DeleteAsync(object id, CancellationToken cancellationToken = default)
         {
-            await Task.Run(() => DeleteFileInStorage(id)).ConfigureAwait(false);
+            await Task.Run(() => DeleteFileInStorageById(id)).ConfigureAwait(false);
         }
 
-        public async Task DeleteFilesAsync(List<object> ids, CancellationToken cancellationToken = default)
+        public async Task DeleteMultipleAsync(List<object> ids, CancellationToken cancellationToken = default)
         {
             await Task.Run(() => {
                 for (int i = 0; i < ids.Count; i++)
@@ -229,7 +229,7 @@ namespace CarbonitePersist
                     if (cancellationToken.IsCancellationRequested)
                         throw new OperationCanceledException();
 
-                    DeleteFileInStorage(ids[i]);
+                    DeleteFileInStorageById(ids[i]);
                 }
             }).ConfigureAwait(false);
         }

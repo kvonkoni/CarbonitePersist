@@ -203,5 +203,120 @@ namespace CarbonitePersist.UnitTest
             Assert.Equal("555-1956", orders[1].Customer.Phone);
             Assert.Equal(DateTime.Parse("2011-12-21"), orders[1].Customer.CustomerSince);
         }
+
+        [Fact]
+        public async Task TestDeleteAsync()
+        {
+            var database = Guid.NewGuid().ToString();
+            var path = Path.Combine(Path.GetTempPath(), database);
+            var ct = new CarboniteTool($"Path={path}");
+            var col = ct.GetCollection<Order>();
+
+            var customerA = new Customer
+            {
+                Id = 2,
+                Firstname = "Bill",
+                Lastname = "Masterson",
+                Email = "bill.masterson@email.com",
+                Phone = "555-1234",
+                CustomerSince = DateTime.Parse("2008-11-01"),
+            };
+
+            var customerB = new Customer
+            {
+                Id = 3,
+                Firstname = "Jill",
+                Lastname = "James",
+                Email = "jjames@domain.com",
+                Phone = "555-9456",
+                CustomerSince = DateTime.Parse("2012-03-11"),
+            };
+
+            var orderA = new Order
+            {
+                Id = new Guid("06a1bac6-b534-421d-a130-1441fe0ef5c6"),
+                Subtotal = 55.23,
+                Total = 60.91,
+                IsFilled = true,
+                Customer = customerA,
+            };
+
+            var orderB = new Order
+            {
+                Id = new Guid("16db1209-ac9c-472f-bf76-5ba4dcecf2bd"),
+                Subtotal = 240.99,
+                Total = 258.25,
+                IsFilled = false,
+                Customer = customerB,
+            };
+
+            await col.InsertAsync(new List<Order> { orderA, orderB });
+
+            await col.DeleteAsync("06a1bac6-b534-421d-a130-1441fe0ef5c6");
+
+            var orders = await col.GetAllAsync();
+
+            Assert.Single(orders);
+            Assert.Equal(new Guid("16db1209-ac9c-472f-bf76-5ba4dcecf2bd"), orders[0].Id);
+
+            Directory.Delete(path, true);
+        }
+
+        [Fact]
+        public async Task TestDeleteMultipleAsync()
+        {
+            var database = Guid.NewGuid().ToString();
+            var path = Path.Combine(Path.GetTempPath(), database);
+            var ct = new CarboniteTool($"Path={path}");
+            var col = ct.GetCollection<Order>();
+
+            var customerA = new Customer
+            {
+                Id = 2,
+                Firstname = "Bill",
+                Lastname = "Masterson",
+                Email = "bill.masterson@email.com",
+                Phone = "555-1234",
+                CustomerSince = DateTime.Parse("2008-11-01"),
+            };
+
+            var customerB = new Customer
+            {
+                Id = 3,
+                Firstname = "Jill",
+                Lastname = "James",
+                Email = "jjames@domain.com",
+                Phone = "555-9456",
+                CustomerSince = DateTime.Parse("2012-03-11"),
+            };
+
+            var orderA = new Order
+            {
+                Id = new Guid("06a1bac6-b534-421d-a130-1441fe0ef5c6"),
+                Subtotal = 55.23,
+                Total = 60.91,
+                IsFilled = true,
+                Customer = customerA,
+            };
+
+            var orderB = new Order
+            {
+                Id = new Guid("16db1209-ac9c-472f-bf76-5ba4dcecf2bd"),
+                Subtotal = 240.99,
+                Total = 258.25,
+                IsFilled = false,
+                Customer = customerB,
+            };
+
+            await col.InsertAsync(new List<Order> { orderA, orderB });
+
+            await col.DeleteMultipleAsync(new List<object> { "06a1bac6-b534-421d-a130-1441fe0ef5c6", "16db1209-ac9c-472f-bf76-5ba4dcecf2bd" });
+
+            var orders = await col.GetAllAsync();
+
+            Assert.Empty(orders);
+
+            Directory.Delete(path, true);
+        }
     }
 }
