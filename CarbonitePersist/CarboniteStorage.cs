@@ -48,6 +48,12 @@ namespace CarbonitePersist
             WriteMetadataToXml(metadata);
         }
 
+        private void DeleteFileInStorage(object id)
+        {
+            File.Delete(FindMetadataFromId(id));
+            File.Delete(FindFileFromId(id));
+        }
+
         private void WriteMetadataToXml(FileStorageMetadata metadata)
         {
             using (var writer = new StreamWriter(Path.Combine(_ct.storageMetadataPath, $"{metadata.Id}.xml")))
@@ -208,6 +214,24 @@ namespace CarbonitePersist
                 for (int i = 0; i < destinations.Count; i++)
                     RetrieveFileFromStorage(FindFileFromId(ids[i]), destinations[i], overwrite);
                 }).ConfigureAwait(false);
+        }
+
+        public async Task DeleteFileAsync(object id, CancellationToken cancellationToken = default)
+        {
+            await Task.Run(() => DeleteFileInStorage(id)).ConfigureAwait(false);
+        }
+
+        public async Task DeleteFilesAsync(List<object> ids, CancellationToken cancellationToken = default)
+        {
+            await Task.Run(() => {
+                for (int i = 0; i < ids.Count; i++)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                        throw new OperationCanceledException();
+
+                    DeleteFileInStorage(ids[i]);
+                }
+            }).ConfigureAwait(false);
         }
     }
 }

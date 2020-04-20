@@ -71,6 +71,11 @@ namespace CarbonitePersist
                 return entity.Entity;
             }
         }
+
+        private void DeleteFileFromId(object id)
+        {
+            File.Delete(FindFileFromId(id));
+        }
         
         public async Task InsertAsync(T entity, CancellationToken cancellationToken = default)
         {
