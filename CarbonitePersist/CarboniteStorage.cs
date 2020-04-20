@@ -114,7 +114,7 @@ namespace CarbonitePersist
             }
         }
 
-        public async Task UploadAsync(List<object> ids, List<string> sources, CancellationToken cancellationToken = default)
+        public async Task UploadAsync(IReadOnlyList<object> ids, IReadOnlyList<string> sources, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -142,7 +142,7 @@ namespace CarbonitePersist
             }
         }
 
-        public async Task<List<FileStorageMetadata>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<FileStorageMetadata[]> GetAllAsync(CancellationToken cancellationToken = default)
         {
             var result = new List<FileStorageMetadata>();
             try
@@ -157,7 +157,7 @@ namespace CarbonitePersist
                         result.Add(metadata);
                     }
                 }).ConfigureAwait(false);
-                return result;
+                return result.ToArray();
             }
             catch (Exception e)
             {
@@ -179,7 +179,7 @@ namespace CarbonitePersist
             }
         }
 
-        public async Task<List<FileStorageMetadata>> GetByIdsAsync(List<object> ids, CancellationToken cancellationToken = default)
+        public async Task<FileStorageMetadata[]> GetByIdsAsync(IReadOnlyList<object> ids, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -194,7 +194,7 @@ namespace CarbonitePersist
                         results.Add(ReadMetadataFromXml(FindMetadataFromId(id)));
                     }
                 }).ConfigureAwait(false);
-                return results;
+                return results.ToArray();
             }
             catch (Exception e)
             {
@@ -208,7 +208,7 @@ namespace CarbonitePersist
             await Task.Run(() => RetrieveFileFromStorage(FindFileById(id), destination, overwrite)).ConfigureAwait(false);
         }
 
-        public async Task DownloadAsync(List<object> ids, List<string> destinations, bool overwrite = false)
+        public async Task DownloadAsync(IReadOnlyList<object> ids, IReadOnlyList<string> destinations, bool overwrite = false)
         {
             if (ids == null || destinations == null)
                 throw new ArgumentNullException("Must provide ids and destinations");

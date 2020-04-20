@@ -49,7 +49,7 @@ namespace CarbonitePersist.UnitTests
 
             var files = await stor.GetAllAsync();
 
-            Assert.Equal(3, files.Count);
+            Assert.Equal(3, files.Length);
 
             Assert.Equal(1, files[0].Id);
             Assert.Equal("This is a test file.docx", files[0].Filename);
@@ -83,7 +83,7 @@ namespace CarbonitePersist.UnitTests
 
             var files = await stor.GetByIdsAsync(new List<object> { 1, 2 });
 
-            Assert.Equal(2, files.Count);
+            Assert.Equal(2, files.Length);
 
             Assert.Equal(1, files[0].Id);
             Assert.Equal("This is a test file.docx", files[0].Filename);
