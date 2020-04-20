@@ -202,12 +202,22 @@ namespace CarbonitePersist
             }
         }
 
-        public async Task DownloadAsync(object id, string destination, bool overwrite = false)
+        public async Task DownloadAsync(object id, string destination, bool overwrite, CancellationToken cancellationToken = default)
         {
-            await Task.Run(() => RetrieveFileFromStorage(FindFileById(id), destination, overwrite)).ConfigureAwait(false);
+            await Task.Run(() => {
+                if (cancellationToken.IsCancellationRequested)
+                    throw new OperationCanceledException();
+
+                RetrieveFileFromStorage(FindFileById(id), destination, overwrite);
+            }).ConfigureAwait(false);
         }
 
-        public async Task DownloadAsync(IReadOnlyList<object> ids, IReadOnlyList<string> destinations, bool overwrite = false)
+        public async Task DownloadAsync(object id, string destination, CancellationToken cancellationToken = default)
+        {
+            await DownloadAsync(id, destination, false, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task DownloadAsync(IReadOnlyList<object> ids, IReadOnlyList<string> destinations, bool overwrite, CancellationToken cancellationToken = default)
         {
             if (ids == null || destinations == null)
                 throw new ArgumentNullException("Must provide ids and destinations");
@@ -216,9 +226,17 @@ namespace CarbonitePersist
                 throw new InvalidDataException("Ids and destinations must have matching count");
 
             await Task.Run(() => {
+                if (cancellationToken.IsCancellationRequested)
+                    throw new OperationCanceledException();
+
                 for (int i = 0; i < destinations.Count; i++)
                     RetrieveFileFromStorage(FindFileById(ids[i]), destinations[i], overwrite);
                 }).ConfigureAwait(false);
+        }
+
+        public async Task DownloadAsync(IReadOnlyList<object> ids, IReadOnlyList<string> destinations, CancellationToken cancellationToken = default)
+        {
+            await DownloadAsync(ids, destinations, false, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task UpdateDescription(object id, string description, CancellationToken cancellationToken = default)
