@@ -8,26 +8,7 @@ namespace CarbonitePersist.ManualTests
 {
     public class Testing
     {
-        public class Customer
-        {
-            public int Id { get; set; }
-            public string Firstname { get; set; }
-            public string Lastname { get; set; }
-            public string Email { get; set; }
-            public string Phone { get; set; }
-            public DateTime CustomerSince { get; set; }
-        }
-
-        public class Order
-        {
-            public Guid Id { get; set; }
-            public double Subtotal { get; set; }
-            public double Total { get; set; }
-            public bool IsFilled { get; set; }
-            public Customer Customer { get; set; }
-        }
-
-        public static async Task Main()
+        public static async Task NewMain()
         {
             var config = new NLog.Config.LoggingConfiguration();
 
@@ -128,9 +109,6 @@ namespace CarbonitePersist.ManualTests
                 Console.WriteLine($"There is a file called {file.Filename} with ID {file.Id} in storage");
 
             await fileStore.DownloadAsync(metadata[0].Id, $"C:\\Temp\\filedest\\{metadata[0].Filename}", true);
-
-            var empty = ct.GetCollection<object>();
-            await empty.GetAllAsync();
         }
     }
 }

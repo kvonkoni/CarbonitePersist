@@ -25,7 +25,7 @@ namespace CarbonitePersist.ManualTests
     
     class Program
     {
-        static async Task OldMain(string[] args)
+        static async Task Main(string[] args)
         {
             var customerA = new Customer
             {
@@ -47,6 +47,16 @@ namespace CarbonitePersist.ManualTests
                 CustomerSince = DateTime.Parse("2012-03-11"),
             };
 
+            var customerC = new Customer
+            {
+                Id = 4,
+                Firstname = "Armin",
+                Lastname = "Slate",
+                Email = "slatea@domain.com",
+                Phone = "555-1956",
+                CustomerSince = DateTime.Parse("2011-12-21"),
+            };
+
             var newcustomers = new List<Customer> { customerA, customerB };
 
             var ct = new CarboniteTool(@"Path=C:\Temp\Test");
@@ -54,16 +64,18 @@ namespace CarbonitePersist.ManualTests
 
             await customerCollection.InsertAsync(newcustomers);
 
+            await customerCollection.InsertAsync(customerC);
+
             var customers = await customerCollection.GetAllAsync();
 
-            foreach (Customer e in customers)
+            foreach (Customer c in customers)
             {
-                Console.WriteLine($"Customer {e.Firstname} {e.Lastname} has ID {e.Id}");
+                Console.WriteLine($"Customer {c.Firstname} {c.Lastname} has ID {c.Id}");
             }
 
-            var id = Guid.NewGuid();
+            var id = new Guid("06a1bac6-b534-421d-a130-1441fe0ef5c6");
 
-            var order = new Order
+            var orderA = new Order
             {
                 Id = id,
                 Subtotal = 55.23,
@@ -72,13 +84,37 @@ namespace CarbonitePersist.ManualTests
                 Customer = customerA,
             };
 
+            var orderB = new Order
+            {
+                Id = new Guid("16db1209-ac9c-472f-bf76-5ba4dcecf2bd"),
+                Subtotal = 240.99,
+                Total = 258.25,
+                IsFilled = false,
+                Customer = customerC,
+            };
+
             var orderCollection = ct.GetCollection<Order>("OrderNameOverride");
 
-            await orderCollection.InsertAsync(order);
+            await orderCollection.InsertAsync(orderA);
+            await orderCollection.InsertAsync(orderB);
 
             var pullorder = await orderCollection.GetByIdAsync(id);
+            Console.WriteLine($"Pulled order {pullorder.Id} for customer {pullorder.Customer.Firstname} {pullorder.Customer.Lastname} came to a total of {pullorder.Total}");
 
-            Console.WriteLine($"Order {pullorder.Id} for customer {pullorder.Customer.Firstname} {pullorder.Customer.Lastname} came to a total of {pullorder.Total}");
+            foreach (Order o in await orderCollection.GetAllAsync())
+                Console.WriteLine($"Order {o.Id} for customer {o.Customer.Firstname} {o.Customer.Lastname} came to a total of {o.Total}");
+
+            var fileStore = ct.GetStorage();
+            await fileStore.UploadAsync(1, @"C:\Temp\filesource\This is a test file.docx");
+            await fileStore.UploadAsync(2, @"C:\Temp\filesource\broken.pdf");
+            await fileStore.UploadAsync(3, @"C:\Temp\filesource\letter.txt");
+
+            var metadata = await fileStore.GetAllAsync();
+
+            foreach (FileStorageMetadata file in metadata)
+                Console.WriteLine($"There is a file called {file.Filename} with ID {file.Id} in storage");
+
+            await fileStore.DownloadAsync(metadata[0].Id, $"C:\\Temp\\filedest\\{metadata[0].Filename}", true);
         }
     }
 }
