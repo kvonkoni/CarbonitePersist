@@ -126,6 +126,55 @@ namespace CarbonitePersist.UnitTests
         }
 
         [Fact]
+        public async Task TestUpdateDescriptionAsync()
+        {
+            var database = Guid.NewGuid().ToString();
+            var path = Path.Combine(Path.GetTempPath(), database);
+            var ct = new CarboniteTool($"Path={path}");
+            var stor = ct.GetStorage();
+
+            var fileSource = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\filesource";
+
+            await stor.UploadAsync(1, $"{Path.Combine(fileSource, "This is a test file.docx")}");
+
+            var oldmeta = await stor.GetByIdAsync(1);
+
+            Assert.Null(oldmeta.Description);
+
+            await stor.UpdateDescription(1, "DESCRIPTION");
+
+            var newmeta = await stor.GetByIdAsync(1);
+
+            Assert.Equal("DESCRIPTION", newmeta.Description);
+
+            Directory.Delete(path, true);
+        }
+
+        public async Task TestUpdateFilenameAsync()
+        {
+            var database = Guid.NewGuid().ToString();
+            var path = Path.Combine(Path.GetTempPath(), database);
+            var ct = new CarboniteTool($"Path={path}");
+            var stor = ct.GetStorage();
+
+            var fileSource = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\filesource";
+
+            await stor.UploadAsync(1, $"{Path.Combine(fileSource, "This is a test file.docx")}");
+
+            var oldmeta = await stor.GetByIdAsync(1);
+
+            Assert.Equal("This is a test file.docx", oldmeta.Filename);
+
+            await stor.UpdateFilename(1, "NewFilename.docx");
+
+            var newmeta = await stor.GetByIdAsync(1);
+
+            Assert.Equal("NewFilename.docx", newmeta.Filename);
+
+            Directory.Delete(path, true);
+        }
+
+        [Fact]
         public async Task TestDeleteAsync()
         {
             var database = Guid.NewGuid().ToString();

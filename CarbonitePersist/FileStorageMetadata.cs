@@ -16,6 +16,6 @@ namespace CarbonitePersist
                 return Path.GetExtension(Filename);
             }
         }
-        public string FilenameInStorage { get; set; }
+        public string Description { get; set; }
     }
 }

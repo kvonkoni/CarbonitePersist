@@ -222,6 +222,34 @@ namespace CarbonitePersist
                 }).ConfigureAwait(false);
         }
 
+        public async Task UpdateDescription(object id, string description, CancellationToken cancellationToken = default)
+        {
+            await Task.Run(() =>
+            {
+                var file = FindMetadataFromId(id);
+                if (file != null)
+                {
+                    var meta = ReadMetadataFromXml(file);
+                    meta.Description = description;
+                    WriteMetadataToXml(meta);
+                }
+            }).ConfigureAwait(false);
+        }
+
+        public async Task UpdateFilename(object id, string filename, CancellationToken cancellationToken = default)
+        {
+            await Task.Run(() =>
+            {
+                var file = FindMetadataFromId(id);
+                if (file != null)
+                {
+                    var meta = ReadMetadataFromXml(file);
+                    meta.Filename = filename;
+                    WriteMetadataToXml(meta);
+                }
+            }).ConfigureAwait(false);
+        }
+
         public async Task DeleteAsync(object id, CancellationToken cancellationToken = default)
         {
             await Task.Run(() => DeleteFileInStorageById(id)).ConfigureAwait(false);
