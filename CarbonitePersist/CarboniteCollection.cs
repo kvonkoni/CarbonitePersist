@@ -209,5 +209,19 @@ namespace CarbonitePersist
                 }
             }).ConfigureAwait(false);
         }
+
+        public async Task DeleteAllAsync(CancellationToken cancellationToken = default)
+        {
+            await Task.Run(() =>
+            {
+                foreach (string file in collectionManifest)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                        throw new OperationCanceledException();
+
+                    File.Delete(file);
+                }
+            }).ConfigureAwait(false);
+        }
     }
 }
