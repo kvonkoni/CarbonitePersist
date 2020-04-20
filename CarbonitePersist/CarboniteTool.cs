@@ -11,19 +11,19 @@ namespace CarbonitePersist
 
         private readonly CarboniteConnectionStringBuilder _carboniteConnectionStringBuilder;
 
+        internal readonly string path;
+
+        internal readonly string collectionPath;
+
         internal readonly string storagePath;
-
-        internal readonly string entityCollectionPath;
-
-        internal readonly string documentCollectionPath;
 
         public CarboniteTool(string connectionString)
         {
             _carboniteConnectionStringBuilder = new CarboniteConnectionStringBuilder(connectionString);
             
-            storagePath = _carboniteConnectionStringBuilder.Path;
-            entityCollectionPath = Path.Combine(storagePath, @"xmls");
-            documentCollectionPath = Path.Combine(storagePath, @"documents");
+            path = _carboniteConnectionStringBuilder.Path;
+            collectionPath = Path.Combine(path, @"collections");
+            storagePath = Path.Combine(path, @"storage");
 
             DbConnectionInit();
         }
@@ -32,17 +32,17 @@ namespace CarbonitePersist
         {
             try
             {
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
+                if (!Directory.Exists(collectionPath))
+                {
+                    Directory.CreateDirectory(collectionPath);
+                }
                 if (!Directory.Exists(storagePath))
                 {
                     Directory.CreateDirectory(storagePath);
-                }
-                if (!Directory.Exists(entityCollectionPath))
-                {
-                    Directory.CreateDirectory(entityCollectionPath);
-                }
-                if (!Directory.Exists(documentCollectionPath))
-                {
-                    Directory.CreateDirectory(documentCollectionPath);
                 }
             }
             catch (Exception e)

@@ -25,7 +25,7 @@ namespace CarbonitePersist.ManualTests
     
     class Program
     {
-        static async Task Main(string[] args)
+        static async Task OldMain(string[] args)
         {
             var customerA = new Customer
             {

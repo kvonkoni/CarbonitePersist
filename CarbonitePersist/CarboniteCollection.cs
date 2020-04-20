@@ -28,7 +28,7 @@ namespace CarbonitePersist
         internal CarboniteCollection(CarboniteTool ct)
         {
             _ct = ct;
-            _collectionPath = Path.Combine(_ct.entityCollectionPath, typeof(T).Name);
+            _collectionPath = Path.Combine(_ct.collectionPath, typeof(T).Name);
 
             if (!Directory.Exists(_collectionPath))
             {
@@ -39,7 +39,7 @@ namespace CarbonitePersist
         internal CarboniteCollection(CarboniteTool ct, string name)
         {
             _ct = ct;
-            _collectionPath = Path.Combine(_ct.entityCollectionPath, name);
+            _collectionPath = Path.Combine(_ct.collectionPath, name);
 
             if (!Directory.Exists(_collectionPath))
             {
