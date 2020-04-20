@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TEntityOfOrder xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Id xmlns:q1="http://microsoft.com/wsdl/types/" xsi:type="q1:guid">06a1bac6-b534-421d-a130-1441fe0ef5c6</Id>
+  <Entity>
+    <Id>06a1bac6-b534-421d-a130-1441fe0ef5c6</Id>
+    <Subtotal>55.23</Subtotal>
+    <Total>60.91</Total>
+    <IsFilled>true</IsFilled>
+    <Customer>
+      <Id>2</Id>
+      <Firstname>Bill</Firstname>
+      <Lastname>Masterson</Lastname>
+      <Email>bill.masterson@email.com</Email>
+      <Phone>555-1234</Phone>
+      <CustomerSince>2008-11-01T00:00:00</CustomerSince>
+    </Customer>
+  </Entity>
+</TEntityOfOrder>

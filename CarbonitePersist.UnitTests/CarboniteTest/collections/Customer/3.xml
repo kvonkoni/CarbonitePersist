@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TEntityOfCustomer xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Id xsi:type="xsd:int">3</Id>
+  <Entity>
+    <Id>3</Id>
+    <Firstname>Jill</Firstname>
+    <Lastname>James</Lastname>
+    <Email>jjames@domain.com</Email>
+    <Phone>555-9456</Phone>
+    <CustomerSince>2012-03-11T00:00:00</CustomerSince>
+  </Entity>
+</TEntityOfCustomer>

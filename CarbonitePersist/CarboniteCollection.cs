@@ -17,7 +17,7 @@ namespace CarbonitePersist
 
         private XmlSerializer serializer = new XmlSerializer(typeof(TEntity<T>));
 
-        private List<string> _collectionManifest
+        private List<string> collectionManifest
         {
             get
             {
@@ -60,7 +60,7 @@ namespace CarbonitePersist
 
         private string FindFileFromId(object id)
         {
-            return _collectionManifest.Find(x => Path.GetFileName(x).Equals($"{id}.xml"));
+            return collectionManifest.Find(x => Path.GetFileName(x).Equals($"{id}.xml"));
         }
 
         private T ReadFromXml(string path)
@@ -125,11 +125,11 @@ namespace CarbonitePersist
             try
             {
                 await Task.Run(() => {
-                    foreach (string file in _collectionManifest)
+                    foreach (string file in collectionManifest)
                     {
                         if (cancellationToken.IsCancellationRequested)
                             throw new OperationCanceledException();
-                        
+
                         var entity = ReadFromXml(file);
                         result.Add(entity);
                     }

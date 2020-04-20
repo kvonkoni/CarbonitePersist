@@ -118,7 +118,7 @@ namespace CarbonitePersist.ManualTests
                 Console.WriteLine($"Order {o.Id} for customer {o.Customer.Firstname} {o.Customer.Lastname} came to a total of {o.Total}");
 
             var fileStore = ct.GetStorage();
-            await fileStore.UploadAsync(1, @"C:\Temp\filesource\permissions.docx");
+            await fileStore.UploadAsync(1, @"C:\Temp\filesource\This is a test file.docx");
             await fileStore.UploadAsync(2, @"C:\Temp\filesource\broken.pdf");
 
             var metadata = await fileStore.GetAllAsync();
@@ -127,6 +127,9 @@ namespace CarbonitePersist.ManualTests
                 Console.WriteLine($"There is a file called {file.Filename} with ID {file.Id} in storage");
 
             await fileStore.DownloadFile(metadata[0].Id, $"C:\\Temp\\filedest\\{metadata[0].Filename}", true);
+
+            var empty = ct.GetCollection<object>();
+            await empty.GetAllAsync();
         }
     }
 }
