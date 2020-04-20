@@ -51,10 +51,10 @@ namespace CarbonitePersist
         {
             var entity = ObjectHandler.ConvertToEntity<T>(input);
 
-            using (var writer = new StreamWriter(Path.Combine(_collectionPath, $"{entity.Id.ToString()}.xml")))
+            using (var writer = new StreamWriter(Path.Combine(_collectionPath, $"{entity.Id}.xml")))
             {
                 serializer.Serialize(writer, entity);
-                _log.Info($"Inserted {entity.GetType()} into Carbonite Db");
+                _log.Info($"Inserted {entity} into Carbonite");
             }
         }
 

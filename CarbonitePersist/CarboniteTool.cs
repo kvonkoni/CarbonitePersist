@@ -17,6 +17,8 @@ namespace CarbonitePersist
 
         internal readonly string storagePath;
 
+        internal readonly string storageMetadataPath;
+
         public CarboniteTool(string connectionString)
         {
             _carboniteConnectionStringBuilder = new CarboniteConnectionStringBuilder(connectionString);
@@ -24,6 +26,7 @@ namespace CarbonitePersist
             path = _carboniteConnectionStringBuilder.Path;
             collectionPath = Path.Combine(path, @"collections");
             storagePath = Path.Combine(path, @"storage");
+            storageMetadataPath = Path.Combine(path, @"storage-metadata");
 
             DbConnectionInit();
         }
@@ -43,6 +46,10 @@ namespace CarbonitePersist
                 if (!Directory.Exists(storagePath))
                 {
                     Directory.CreateDirectory(storagePath);
+                }
+                if (!Directory.Exists(storageMetadataPath))
+                {
+                    Directory.CreateDirectory(storageMetadataPath);
                 }
             }
             catch (Exception e)
