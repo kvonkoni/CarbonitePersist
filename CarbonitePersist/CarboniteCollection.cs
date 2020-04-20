@@ -15,9 +15,9 @@ namespace CarbonitePersist
 
         private readonly string _collectionPath;
 
-        private XmlSerializer serializer = new XmlSerializer(typeof(TEntity<T>));
+        private readonly XmlSerializer serializer = new XmlSerializer(typeof(TEntity<T>));
 
-        private List<string> collectionManifest
+        private List<string> CollectionManifest
         {
             get
             {
@@ -51,16 +51,14 @@ namespace CarbonitePersist
         {
             var entity = ObjectHandler.ConvertToEntity<T>(input);
 
-            using (var writer = new StreamWriter(Path.Combine(_collectionPath, $"{entity.Id}.xml")))
-            {
-                serializer.Serialize(writer, entity);
-                _log.Info($"Inserted {entity} into Carbonite");
-            }
+            using var writer = new StreamWriter(Path.Combine(_collectionPath, $"{entity.Id}.xml"));
+            serializer.Serialize(writer, entity);
+            _log.Info($"Inserted {entity} into Carbonite");
         }
 
         private string FindFileById(object id)
         {
-            return collectionManifest.Find(x => Path.GetFileName(x).Equals($"{id}.xml"));
+            return CollectionManifest.Find(x => Path.GetFileName(x).Equals($"{id}.xml"));
         }
 
         private void DeleteFileById(object id)
@@ -70,11 +68,9 @@ namespace CarbonitePersist
 
         private T ReadFromXml(string path)
         {
-            using (var stream = new FileStream(Path.Combine(_collectionPath, path), FileMode.Open))
-            {
-                var entity = (TEntity<T>)serializer.Deserialize(stream);
-                return entity.Entity;
-            }
+            using var stream = new FileStream(Path.Combine(_collectionPath, path), FileMode.Open);
+            var entity = (TEntity<T>)serializer.Deserialize(stream);
+            return entity.Entity;
         }
         
         public async Task InsertAsync(T entity, CancellationToken cancellationToken = default)
@@ -130,7 +126,7 @@ namespace CarbonitePersist
             try
             {
                 await Task.Run(() => {
-                    foreach (string file in collectionManifest)
+                    foreach (string file in CollectionManifest)
                     {
                         if (cancellationToken.IsCancellationRequested)
                             throw new OperationCanceledException();
@@ -152,6 +148,9 @@ namespace CarbonitePersist
         {
             try
             {
+                if (cancellationToken.IsCancellationRequested)
+                    throw new OperationCanceledException();
+
                 return await Task.Run(() =>ReadFromXml(FindFileById(id))).ConfigureAwait(false);
             }
             catch (Exception e)
@@ -214,7 +213,7 @@ namespace CarbonitePersist
         {
             await Task.Run(() =>
             {
-                foreach (string file in collectionManifest)
+                foreach (string file in CollectionManifest)
                 {
                     if (cancellationToken.IsCancellationRequested)
                         throw new OperationCanceledException();

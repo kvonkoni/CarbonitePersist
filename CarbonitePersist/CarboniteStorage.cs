@@ -50,19 +50,15 @@ namespace CarbonitePersist
 
         private void WriteMetadataToXml(FileStorageMetadata metadata)
         {
-            using (var writer = new StreamWriter(Path.Combine(_ct.storageMetadataPath, $"{metadata.Id}.xml")))
-            {
-                serializer.Serialize(writer, metadata);
-                _log.Info($"Inserted {metadata} into Carbonite");
-            }
+            using var writer = new StreamWriter(Path.Combine(_ct.storageMetadataPath, $"{metadata.Id}.xml"));
+            serializer.Serialize(writer, metadata);
+            _log.Info($"Inserted {metadata} into Carbonite");
         }
 
         private FileStorageMetadata ReadMetadataFromXml(string path)
         {
-            using (var stream = new FileStream(Path.Combine(_ct.storageMetadataPath, path), FileMode.Open))
-            {
-                return (FileStorageMetadata)serializer.Deserialize(stream);
-            }
+            using var stream = new FileStream(Path.Combine(_ct.storageMetadataPath, path), FileMode.Open);
+            return (FileStorageMetadata)serializer.Deserialize(stream);
         }
 
         private void RetrieveFileFromStorage(string source, string destination, bool overwrite = false)
@@ -170,6 +166,9 @@ namespace CarbonitePersist
         {
             try
             {
+                if (cancellationToken.IsCancellationRequested)
+                    throw new OperationCanceledException();
+
                 return await Task.Run(() => ReadMetadataFromXml(FindMetadataFromId(id))).ConfigureAwait(false);
             }
             catch (Exception e)
