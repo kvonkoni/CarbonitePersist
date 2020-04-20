@@ -127,7 +127,7 @@ namespace CarbonitePersist.ManualTests
             foreach (FileStorageMetadata file in metadata)
                 Console.WriteLine($"There is a file called {file.Filename} with ID {file.Id} in storage");
 
-            await fileStore.DownloadFileAsync(metadata[0].Id, $"C:\\Temp\\filedest\\{metadata[0].Filename}", true);
+            await fileStore.DownloadAsync(metadata[0].Id, $"C:\\Temp\\filedest\\{metadata[0].Filename}", true);
 
             var empty = ct.GetCollection<object>();
             await empty.GetAllAsync();

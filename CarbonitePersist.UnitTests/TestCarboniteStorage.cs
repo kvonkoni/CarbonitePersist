@@ -10,7 +10,7 @@ namespace CarbonitePersist.UnitTests
     public class TestCarboniteStorage
     {
         [Fact]
-        public async Task TestInsertAsync()
+        public async Task TestUploadAsync()
         {
             var database = Guid.NewGuid().ToString();
             var path = Path.Combine(Path.GetTempPath(), database);
@@ -26,7 +26,7 @@ namespace CarbonitePersist.UnitTests
         }
 
         [Fact]
-        public async Task TestInsertOverloadAsync()
+        public async Task TestUploadOverloadAsync()
         {
             var database = Guid.NewGuid().ToString();
             var path = Path.Combine(Path.GetTempPath(), database);
@@ -90,6 +90,39 @@ namespace CarbonitePersist.UnitTests
 
             Assert.Equal(2, files[1].Id);
             Assert.Equal("broken.pdf", files[1].Filename);
+        }
+
+        [Fact]
+        public async Task TestDownloadAsync()
+        {
+            var path = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\CarboniteTest";
+            var ct = new CarboniteTool($"Path={path}");
+            var stor = ct.GetStorage();
+
+            var randomName = Guid.NewGuid().ToString();
+            var destination = Path.Combine(Path.GetTempPath(), randomName);
+
+            await stor.DownloadAsync(1, destination);
+
+            File.Delete(destination);
+        }
+
+        [Fact]
+        public async Task TestDownloadOverloadAsync()
+        {
+            var path = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\CarboniteTest";
+            var ct = new CarboniteTool($"Path={path}");
+            var stor = ct.GetStorage();
+
+            var randomName1 = Guid.NewGuid().ToString();
+            var randomName2 = Guid.NewGuid().ToString();
+            var destination1 = Path.Combine(Path.GetTempPath(), randomName1);
+            var destination2 = Path.Combine(Path.GetTempPath(), randomName2);
+
+            await stor.DownloadAsync(new List<object> { 1, 2 }, new List<string> { destination1, destination2 });
+
+            File.Delete(destination1);
+            File.Delete(destination2);
         }
     }
 }
