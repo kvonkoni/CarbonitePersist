@@ -167,7 +167,7 @@ namespace CarbonitePersist
             }
 }
 
-        public async Task<List<FileStorageMetadata>> GetByIdAsync(List<object> ids, CancellationToken cancellationToken = default)
+        public async Task<List<FileStorageMetadata>> GetByIdsAsync(List<object> ids, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -191,12 +191,12 @@ namespace CarbonitePersist
             }
         }
 
-        public async Task DownloadFile(object id, string destination, bool overwrite = false)
+        public async Task DownloadFileAsync(object id, string destination, bool overwrite = false)
         {
             await Task.Run(() => RetrieveFileFromStorage(FindFileFromId(id), destination, overwrite)).ConfigureAwait(false);
         }
 
-        public async Task DownloadFile(List<object> ids, List<string> destinations, bool overwrite = false)
+        public async Task DownloadFileAsync(List<object> ids, List<string> destinations, bool overwrite = false)
         {
             if (ids == null || destinations == null)
                 throw new ArgumentNullException("Must provide ids and destinations");
