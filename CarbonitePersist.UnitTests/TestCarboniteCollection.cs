@@ -119,7 +119,7 @@ namespace CarbonitePersist.UnitTest
 
             var orders = await col.GetAllAsync();
 
-            Assert.Equal(2, orders.Count);
+            Assert.Equal(2, orders.Length);
 
             Assert.Equal(new Guid("06a1bac6-b534-421d-a130-1441fe0ef5c6"), orders[0].Id);
             Assert.Equal(55.23, orders[0].Subtotal);
@@ -177,7 +177,7 @@ namespace CarbonitePersist.UnitTest
 
             var orders = await col.GetByIdsAsync(new List<object> { "06a1bac6-b534-421d-a130-1441fe0ef5c6", "16db1209-ac9c-472f-bf76-5ba4dcecf2bd" });
 
-            Assert.Equal(2, orders.Count);
+            Assert.Equal(2, orders.Length);
 
             Assert.Equal(new Guid("06a1bac6-b534-421d-a130-1441fe0ef5c6"), orders[0].Id);
             Assert.Equal(55.23, orders[0].Subtotal);

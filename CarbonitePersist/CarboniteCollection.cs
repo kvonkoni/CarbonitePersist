@@ -99,7 +99,7 @@ namespace CarbonitePersist
             }
         }
 
-        public async Task InsertAsync(List<T> entities, CancellationToken cancellationToken = default)
+        public async Task InsertAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -124,7 +124,7 @@ namespace CarbonitePersist
             }
         }
 
-        public async Task<List<T>> GetAllAsync(CancellationToken cancellationToken = default)
+        public async Task<T[]> GetAllAsync(CancellationToken cancellationToken = default)
         {
             var result = new List<T>();
             try
@@ -139,7 +139,7 @@ namespace CarbonitePersist
                         result.Add(entity);
                     }
                 }).ConfigureAwait(false);
-                return result;
+                return result.ToArray();
             }
             catch (Exception e)
             {
@@ -161,7 +161,7 @@ namespace CarbonitePersist
             }
         }
 
-        public async Task<List<T>> GetByIdsAsync(List<object> ids, CancellationToken cancellationToken = default)
+        public async Task<T[]> GetByIdsAsync(IEnumerable<object> ids, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -176,7 +176,7 @@ namespace CarbonitePersist
                         results.Add(ReadFromXml(FindFileById(id)));
                     }
                 }).ConfigureAwait(false);
-                return results;
+                return results.ToArray();
             }
             catch (Exception e)
             {
@@ -196,7 +196,7 @@ namespace CarbonitePersist
             }).ConfigureAwait(false);
         }
 
-        public async Task DeleteMultipleAsync(List<object> ids, CancellationToken cancellationToken = default)
+        public async Task DeleteMultipleAsync(IEnumerable<object> ids, CancellationToken cancellationToken = default)
         {
             await Task.Run(() =>
             {
