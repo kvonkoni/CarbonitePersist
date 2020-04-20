@@ -154,9 +154,9 @@ namespace CarbonitePersist
                 _log.Error(e);
                 throw e;
             }
-}
+        }
 
-        public async Task<List<T>> GetByIdAsync(List<object> ids, CancellationToken cancellationToken = default)
+        public async Task<List<T>> GetByIdsAsync(List<object> ids, CancellationToken cancellationToken = default)
         {
             try
             {

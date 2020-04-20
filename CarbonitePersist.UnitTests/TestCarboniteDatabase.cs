@@ -119,6 +119,8 @@ namespace CarbonitePersist.UnitTest
 
             var orders = await col.GetAllAsync();
 
+            Assert.Equal(2, orders.Count);
+
             Assert.Equal(new Guid("06a1bac6-b534-421d-a130-1441fe0ef5c6"), orders[0].Id);
             Assert.Equal(55.23, orders[0].Subtotal);
             Assert.Equal(60.91, orders[0].Total);
@@ -164,6 +166,42 @@ namespace CarbonitePersist.UnitTest
             Assert.Equal("bill.masterson@email.com", order.Customer.Email);
             Assert.Equal("555-1234", order.Customer.Phone);
             Assert.Equal(DateTime.Parse("2008-11-01"), order.Customer.CustomerSince);
+        }
+
+        [Fact]
+        public async Task TestGetByIdsAsync()
+        {
+            var path = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + "\\CarboniteTest";
+            var db = new CarboniteTool($"Path={path}");
+            var col = db.GetCollection<Order>();
+
+            var orders = await col.GetByIdsAsync(new List<object> { "06a1bac6-b534-421d-a130-1441fe0ef5c6", "16db1209-ac9c-472f-bf76-5ba4dcecf2bd" });
+
+            Assert.Equal(2, orders.Count);
+
+            Assert.Equal(new Guid("06a1bac6-b534-421d-a130-1441fe0ef5c6"), orders[0].Id);
+            Assert.Equal(55.23, orders[0].Subtotal);
+            Assert.Equal(60.91, orders[0].Total);
+            Assert.True(orders[0].IsFilled);
+
+            Assert.Equal(2, orders[0].Customer.Id);
+            Assert.Equal("Bill", orders[0].Customer.Firstname);
+            Assert.Equal("Masterson", orders[0].Customer.Lastname);
+            Assert.Equal("bill.masterson@email.com", orders[0].Customer.Email);
+            Assert.Equal("555-1234", orders[0].Customer.Phone);
+            Assert.Equal(DateTime.Parse("2008-11-01"), orders[0].Customer.CustomerSince);
+
+            Assert.Equal(new Guid("16db1209-ac9c-472f-bf76-5ba4dcecf2bd"), orders[1].Id);
+            Assert.Equal(240.99, orders[1].Subtotal);
+            Assert.Equal(258.25, orders[1].Total);
+            Assert.False(orders[1].IsFilled);
+
+            Assert.Equal(4, orders[1].Customer.Id);
+            Assert.Equal("Armin", orders[1].Customer.Firstname);
+            Assert.Equal("Slate", orders[1].Customer.Lastname);
+            Assert.Equal("slatea@domain.com", orders[1].Customer.Email);
+            Assert.Equal("555-1956", orders[1].Customer.Phone);
+            Assert.Equal(DateTime.Parse("2011-12-21"), orders[1].Customer.CustomerSince);
         }
     }
 }
