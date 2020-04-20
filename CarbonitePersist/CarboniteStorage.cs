@@ -195,5 +195,19 @@ namespace CarbonitePersist
         {
             await Task.Run(() => RetrieveFileFromStorage(FindFileFromId(id), destination, overwrite)).ConfigureAwait(false);
         }
+
+        public async Task DownloadFile(List<object> ids, List<string> destinations, bool overwrite = false)
+        {
+            if (ids == null || destinations == null)
+                throw new ArgumentNullException("Must provide ids and destinations");
+
+            if (!(ids.Count == destinations.Count && ids.Count > 0))
+                throw new InvalidDataException("Ids and destinations must have matching count");
+
+            await Task.Run(() => {
+                for (int i = 0; i < destinations.Count; i++)
+                    RetrieveFileFromStorage(FindFileFromId(ids[i]), destinations[i], overwrite);
+                }).ConfigureAwait(false);
+        }
     }
 }
