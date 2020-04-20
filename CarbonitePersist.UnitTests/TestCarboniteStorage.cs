@@ -57,5 +57,18 @@ namespace CarbonitePersist.UnitTests
             Assert.Equal(2, files[1].Id);
             Assert.Equal("broken.pdf", files[1].Filename);
         }
+
+        [Fact]
+        public async Task TestGetByIdAsync()
+        {
+            var path = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\CarboniteTest";
+            var ct = new CarboniteTool($"Path={path}");
+            var stor = ct.GetStorage();
+
+            var file = await stor.GetByIdAsync(1);
+
+            Assert.Equal(1, file.Id);
+            Assert.Equal("This is a test file.docx", file.Filename);
+        }
     }
 }
