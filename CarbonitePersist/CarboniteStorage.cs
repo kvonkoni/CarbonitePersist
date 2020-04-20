@@ -15,7 +15,7 @@ namespace CarbonitePersist
 
         private readonly XmlSerializer serializer = new XmlSerializer(typeof(FileStorageMetadata));
 
-        private List<string> storageManifest
+        private List<string> StorageManifest
         {
             get
             {
@@ -23,7 +23,7 @@ namespace CarbonitePersist
             }
         }
 
-        private List<string> storageMetadataManifest
+        private List<string> StorageMetadataManifest
         {
             get
             {
@@ -72,12 +72,12 @@ namespace CarbonitePersist
 
         private string FindFileById(object id)
         {
-            return storageManifest.Find(x => Path.GetFileName(x).Equals($"{id}.bin"));
+            return StorageManifest.Find(x => Path.GetFileName(x).Equals($"{id}.bin"));
         }
 
         private string FindMetadataFromId(object id)
         {
-            return storageMetadataManifest.Find(x => Path.GetFileName(x).Equals($"{id}.xml"));
+            return StorageMetadataManifest.Find(x => Path.GetFileName(x).Equals($"{id}.xml"));
         }
 
         private void DeleteFileInStorageById(object id)
@@ -148,7 +148,7 @@ namespace CarbonitePersist
             try
             {
                 await Task.Run(() => {
-                    foreach (string file in storageMetadataManifest)
+                    foreach (string file in StorageMetadataManifest)
                     {
                         if (cancellationToken.IsCancellationRequested)
                             throw new OperationCanceledException();
@@ -226,6 +226,9 @@ namespace CarbonitePersist
         {
             await Task.Run(() =>
             {
+                if (cancellationToken.IsCancellationRequested)
+                    throw new OperationCanceledException();
+
                 var file = FindMetadataFromId(id);
                 if (file != null)
                 {
@@ -240,6 +243,9 @@ namespace CarbonitePersist
         {
             await Task.Run(() =>
             {
+                if (cancellationToken.IsCancellationRequested)
+                    throw new OperationCanceledException();
+
                 var file = FindMetadataFromId(id);
                 if (file != null)
                 {
@@ -252,6 +258,9 @@ namespace CarbonitePersist
 
         public async Task DeleteAsync(object id, CancellationToken cancellationToken = default)
         {
+            if (cancellationToken.IsCancellationRequested)
+                throw new OperationCanceledException();
+
             await Task.Run(() => DeleteFileInStorageById(id)).ConfigureAwait(false);
         }
 
@@ -271,10 +280,11 @@ namespace CarbonitePersist
         public async Task DeleteAllAsync(CancellationToken cancellationToken = default)
         {
             await Task.Run(() => {
-                foreach (string file in storageManifest)
+                foreach (string file in StorageManifest)
                 {
                     if (cancellationToken.IsCancellationRequested)
                         throw new OperationCanceledException();
+                    
                     DeleteFileInStorageById(GetIdFromFileName(file));
                 }
             }).ConfigureAwait(false);
