@@ -119,13 +119,14 @@ namespace CarbonitePersist.ManualTests
 
             var fileStore = ct.GetStorage();
             await fileStore.UploadAsync(1, @"C:\Temp\filesource\permissions.docx");
+            await fileStore.UploadAsync(2, @"C:\Temp\filesource\broken.pdf");
 
             var metadata = await fileStore.GetAllAsync();
 
             foreach (FileStorageMetadata file in metadata)
                 Console.WriteLine($"There is a file called {file.Filename} with ID {file.Id} in storage");
 
-            await fileStore.DownloadFile(metadata[0].Id, $"C:\\Temp\\filedest\\{metadata[0].Filename}");
+            await fileStore.DownloadFile(metadata[0].Id, $"C:\\Temp\\filedest\\{metadata[0].Filename}", true);
         }
     }
 }
