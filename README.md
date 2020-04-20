@@ -6,7 +6,7 @@ CarbonitePersist is a project to create a simple persistence tool without the us
 
 CarbonitePersist stores entities as individual XML files within a folder structure, allowing you to store and retrieve them without the need manage the files directly. Search and retrieval is done by assigning each entity an Id at the time it is inserted into Carbonite. An existing entity in the collection with the same Id is automatically replaced.
 
-The package also allows you to store and retrieve large files from elsewhere on the disk with corresponding metadata.
+The package also allows you to store and retrieve large files from elsewhere on the disk, as well as associate them with additional metadata.
 
 ## Usage
 
