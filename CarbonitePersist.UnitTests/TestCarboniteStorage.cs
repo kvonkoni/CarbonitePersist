@@ -39,5 +39,23 @@ namespace CarbonitePersist.UnitTests
 
             Directory.Delete(path, true);
         }
+
+        [Fact]
+        public async Task TestGetAllAsync()
+        {
+            var path = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\CarboniteTest";
+            var ct = new CarboniteTool($"Path={path}");
+            var stor = ct.GetStorage();
+
+            var files = await stor.GetAllAsync();
+
+            Assert.Equal(2, files.Count);
+
+            Assert.Equal(1, files[0].Id);
+            Assert.Equal("This is a test file.docx", files[0].Filename);
+
+            Assert.Equal(2, files[1].Id);
+            Assert.Equal("broken.pdf", files[1].Filename);
+        }
     }
 }

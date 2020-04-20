@@ -113,7 +113,7 @@ namespace CarbonitePersist.UnitTest
         [Fact]
         public async Task TestGetAllAsync()
         {
-            var path = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + "\\CarboniteTest";
+            var path = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\CarboniteTest";
             var ct = new CarboniteTool($"Path={path}");
             var col = ct.GetCollection<Order>();
 
