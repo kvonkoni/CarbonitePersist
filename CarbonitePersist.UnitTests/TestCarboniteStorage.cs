@@ -150,6 +150,7 @@ namespace CarbonitePersist.UnitTests
             Directory.Delete(path, true);
         }
 
+        [Fact]
         public async Task TestUpdateFilenameAsync()
         {
             var database = Guid.NewGuid().ToString();
