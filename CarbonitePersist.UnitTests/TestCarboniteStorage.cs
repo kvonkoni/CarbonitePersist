@@ -167,5 +167,26 @@ namespace CarbonitePersist.UnitTests
 
             Directory.Delete(path, true);
         }
+
+        [Fact]
+        public async Task TestDeleteAllAsync()
+        {
+            var database = Guid.NewGuid().ToString();
+            var path = Path.Combine(Path.GetTempPath(), database);
+            var ct = new CarboniteTool($"Path={path}");
+            var stor = ct.GetStorage();
+
+            var fileSource = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\filesource";
+
+            await stor.UploadAsync(new List<object> { 1, 2 }, new List<string> { $"{Path.Combine(fileSource, "This is a test file.docx")}", $"{Path.Combine(fileSource, "broken.pdf")}" });
+
+            await stor.DeleteAllAsync();
+
+            var files = await stor.GetAllAsync();
+
+            Assert.Empty(files);
+
+            Directory.Delete(path, true);
+        }
     }
 }

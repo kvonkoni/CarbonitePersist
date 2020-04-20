@@ -82,8 +82,14 @@ namespace CarbonitePersist
 
         private void DeleteFileInStorageById(object id)
         {
-            File.Delete(FindMetadataFromId(id));
             File.Delete(FindFileById(id));
+            if (FindMetadataFromId(id) != null)
+                File.Delete(FindMetadataFromId(id));
+        }
+
+        private string GetIdFromFileName(string file)
+        {
+            return Path.GetFileNameWithoutExtension(file);
         }
 
         public async Task UploadAsync(object id, string source, CancellationToken cancellationToken = default)
@@ -230,6 +236,18 @@ namespace CarbonitePersist
                         throw new OperationCanceledException();
 
                     DeleteFileInStorageById(ids[i]);
+                }
+            }).ConfigureAwait(false);
+        }
+
+        public async Task DeleteAllAsync(CancellationToken cancellationToken = default)
+        {
+            await Task.Run(() => {
+                foreach (string file in storageManifest)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                        throw new OperationCanceledException();
+                    DeleteFileInStorageById(GetIdFromFileName(file));
                 }
             }).ConfigureAwait(false);
         }
