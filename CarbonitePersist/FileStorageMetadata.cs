@@ -17,5 +17,6 @@ namespace CarbonitePersist
             }
         }
         public string Description { get; set; }
+        public DateTime UploadDate { get; set; }
     }
 }
