@@ -7,10 +7,10 @@
     <Description>CarbonitePersist is a project to create a simple persistence tool without the use of a database, storing entities within collections in individual XML files and allowing them to be retrieved by ID. It favours simplicity, human readability, and portability over advanced features.</Description>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/kvonkoni/CarbonitePersist</PackageProjectUrl>
-    <AssemblyVersion>0.1.0.0</AssemblyVersion>
-    <FileVersion>0.1.0.0</FileVersion>
-    <PackageReleaseNotes>* First release</PackageReleaseNotes>
-    <Version>0.1.0</Version>
+    <AssemblyVersion>0.3.0.0</AssemblyVersion>
+    <FileVersion>0.3.0.0</FileVersion>
+    <PackageReleaseNotes>* Improved metadata for file storage</PackageReleaseNotes>
+    <Version>0.3.0</Version>
     <Copyright>Copyright 2020 Kier von Konigslow</Copyright>
     <RepositoryUrl>https://github.com/kvonkoni/CarbonitePersist</RepositoryUrl>
   </PropertyGroup>
