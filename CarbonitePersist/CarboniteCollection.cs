@@ -50,6 +50,7 @@ namespace CarbonitePersist
         private void WriteToXml(T input)
         {
             var entity = ObjectHandler.ConvertToEntity<T>(input);
+            entity.CreationDate = DateTime.Now;
 
             using var writer = new StreamWriter(Path.Combine(_collectionPath, $"{entity.Id}.xml"));
             serializer.Serialize(writer, entity);
