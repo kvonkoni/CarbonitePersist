@@ -240,24 +240,7 @@ namespace CarbonitePersist
             await DownloadAsync(ids, destinations, false, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task UpdateDescription(object id, string description, CancellationToken cancellationToken = default)
-        {
-            await Task.Run(() =>
-            {
-                if (cancellationToken.IsCancellationRequested)
-                    throw new OperationCanceledException();
-
-                var file = FindMetadataFromId(id);
-                if (file != null)
-                {
-                    var meta = ReadMetadataFromXml(file);
-                    meta.Description = description;
-                    WriteMetadataToXml(meta);
-                }
-            }).ConfigureAwait(false);
-        }
-
-        public async Task UpdateFilename(object id, string filename, CancellationToken cancellationToken = default)
+        public async Task SetFilename(object id, string filename, CancellationToken cancellationToken = default)
         {
             await Task.Run(() =>
             {

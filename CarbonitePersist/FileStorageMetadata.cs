@@ -20,8 +20,6 @@ namespace CarbonitePersist
             }
         }
         
-        public string Description { get; set; }
-        
         public DateTime UploadDate { get; set; }
         
         public List<SerializableKeyValuePair<string, string>> XMLMetadataProxy { get; set; }
