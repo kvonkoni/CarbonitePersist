@@ -9,8 +9,6 @@ namespace CarbonitePersist
 {
     public class CarboniteCollection<T>
     {
-        private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
-
         private readonly CarboniteTool _ct;
 
         private readonly string _collectionPath;
@@ -54,7 +52,6 @@ namespace CarbonitePersist
 
             using var writer = new StreamWriter(Path.Combine(_collectionPath, $"{entity.Id}.xml"));
             serializer.Serialize(writer, entity);
-            _log.Info($"Inserted {entity} into Carbonite");
         }
 
         private string FindFileById(object id)
@@ -76,113 +73,73 @@ namespace CarbonitePersist
         
         public async Task InsertAsync(T entity, CancellationToken cancellationToken = default)
         {
-            try
+            await Task.Run(() =>
             {
-                await Task.Run(() =>
-                {
-                    if (entity == null)
-                        throw new ArgumentNullException();
+                if (entity == null)
+                    throw new ArgumentNullException();
 
-                    if (cancellationToken.IsCancellationRequested)
-                        throw new OperationCanceledException();
+                if (cancellationToken.IsCancellationRequested)
+                    throw new OperationCanceledException();
 
-                    WriteToXml(entity);
-                }).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                _log.Error(e);
-                throw e;
-            }
+                WriteToXml(entity);
+            }).ConfigureAwait(false);
         }
 
         public async Task InsertAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                if (entities == null)
-                    throw new ArgumentNullException();
+            if (entities == null)
+                throw new ArgumentNullException();
 
-                await Task.Run(() =>
-                {
-                    foreach (T entity in entities)
-                    {
-                        if (cancellationToken.IsCancellationRequested)
-                            throw new OperationCanceledException();
-                        
-                        WriteToXml(entity);
-                    }
-                }).ConfigureAwait(false);
-            }
-            catch (Exception e)
+            await Task.Run(() =>
             {
-                _log.Error(e);
-                throw e;
-            }
+                foreach (T entity in entities)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                        throw new OperationCanceledException();
+                        
+                    WriteToXml(entity);
+                }
+            }).ConfigureAwait(false);
         }
 
         public async Task<T[]> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            var result = new List<T>();
-            try
-            {
-                await Task.Run(() => {
-                    foreach (string file in CollectionManifest)
-                    {
-                        if (cancellationToken.IsCancellationRequested)
-                            throw new OperationCanceledException();
+        var result = new List<T>();
+            await Task.Run(() => {
+                foreach (string file in CollectionManifest)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                        throw new OperationCanceledException();
 
-                        var entity = ReadFromXml(file);
-                        result.Add(entity);
-                    }
-                }).ConfigureAwait(false);
-                return result.ToArray();
-            }
-            catch (Exception e)
-            {
-                _log.Error(e);
-                throw e;
-            }
+                    var entity = ReadFromXml(file);
+                    result.Add(entity);
+                }
+            }).ConfigureAwait(false);
+            return result.ToArray();
         }
 
         public async Task<T> GetByIdAsync(object id, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                if (cancellationToken.IsCancellationRequested)
-                    throw new OperationCanceledException();
+            if (cancellationToken.IsCancellationRequested)
+                throw new OperationCanceledException();
 
-                return await Task.Run(() =>ReadFromXml(FindFileById(id))).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                _log.Error(e);
-                throw e;
-            }
+            return await Task.Run(() =>ReadFromXml(FindFileById(id))).ConfigureAwait(false);
         }
 
         public async Task<T[]> GetByIdsAsync(IEnumerable<object> ids, CancellationToken cancellationToken = default)
         {
-            try
+            var results = new List<T>();
+            await Task.Run(() =>
             {
-                var results = new List<T>();
-                await Task.Run(() =>
+                foreach (object id in ids)
                 {
-                    foreach (object id in ids)
-                    {
-                        if (cancellationToken.IsCancellationRequested)
-                            throw new OperationCanceledException();
+                    if (cancellationToken.IsCancellationRequested)
+                        throw new OperationCanceledException();
 
-                        results.Add(ReadFromXml(FindFileById(id)));
-                    }
-                }).ConfigureAwait(false);
-                return results.ToArray();
-            }
-            catch (Exception e)
-            {
-                _log.Error(e);
-                throw e;
-            }
+                    results.Add(ReadFromXml(FindFileById(id)));
+                }
+            }).ConfigureAwait(false);
+            return results.ToArray();
         }
 
         public async Task DeleteAsync(object id, CancellationToken cancellationToken = default)
