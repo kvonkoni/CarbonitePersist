@@ -41,7 +41,8 @@ namespace CarbonitePersist
             var metadata = new FileStorageMetadata
             {
                 Id = id,
-                Filename = Path.GetFileName(source)
+                Filename = Path.GetFileName(source),
+                UploadDate = DateTime.Now,
             };
             File.Copy(source, Path.Combine(_ct.storagePath, $"{id}.bin"), true);
             _log.Info($"Copied {source} into Carbonite");
