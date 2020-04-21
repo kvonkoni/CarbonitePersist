@@ -109,37 +109,32 @@ namespace CarbonitePersist.ManualTests
             await fileStore.UploadAsync(2, @"C:\Temp\filesource\broken.pdf");
             await fileStore.UploadAsync(3, @"C:\Temp\filesource\letter.txt");
 
-            await fileStore.UpdateDescription(3, "this is a description");
-
             var dict = new Dictionary<string, string>
             {
-                {"key1" , "value1" },
+                {"Description" , "This is a description" },
                 {"key2" , "value2" },
                 {"key3" , "value3" },
                 {"key4" , "value4" },
             };
 
-            await fileStore.SetMetadata(3, dict);
+            await fileStore.SetMetadata(2, dict);
 
-            var meta = await fileStore.GetByIdAsync(3);
-            if (meta.XMLMetadataProxy != null)
-            {
-                Console.WriteLine($"The metadata associated with the file ID {meta.Id} is:");
-                foreach (SerializableKeyValuePair<string, string> pair in meta.XMLMetadataProxy)
-                    Console.WriteLine($"{pair.Key} : {pair.Value}");
-            }
-            else
-                Console.WriteLine("This file's metadata is null");
-
+            var meta = await fileStore.GetByIdAsync(2);
 
             var metadata = await fileStore.GetAllAsync();
 
             foreach (FileStorageMetadata file in metadata)
             {
-                if (file.Description != null)
-                    Console.WriteLine($"There is a file called {file.Filename} with ID {file.Id} and description \"{file.Description}\" in storage");
+                if (file.Metadata.Count > 0)
+                {
+                    Console.WriteLine($"There is a file called \"{file.Filename}\" with ID {file.Id} in storage. It has metadata:");
+                    foreach (KeyValuePair<string, string> pair in file.Metadata)
+                    {
+                        Console.WriteLine($"    Key: {pair.Key}, Value: {pair.Value}");
+                    }
+                }
                 else
-                    Console.WriteLine($"There is a file called {file.Filename} with ID {file.Id} and no description in storage");
+                    Console.WriteLine($"There is a file called \"{file.Filename}\" with ID {file.Id} in storage. It has no metadata.");
             }
 
             await fileStore.DownloadAsync(metadata[0].Id, $"C:\\Temp\\filedest\\{metadata[0].Filename}", true);
