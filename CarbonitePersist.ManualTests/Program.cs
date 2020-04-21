@@ -111,6 +111,27 @@ namespace CarbonitePersist.ManualTests
 
             await fileStore.UpdateDescription(3, "this is a description");
 
+            var dict = new Dictionary<string, string>
+            {
+                {"key1" , "value1" },
+                {"key2" , "value2" },
+                {"key3" , "value3" },
+                {"key4" , "value4" },
+            };
+
+            await fileStore.SetMetadata(3, dict);
+
+            var meta = await fileStore.GetByIdAsync(3);
+            if (meta.XMLMetadataProxy != null)
+            {
+                Console.WriteLine($"The metadata associated with the file ID {meta.Id} is:");
+                foreach (SerializableKeyValuePair<string, string> pair in meta.XMLMetadataProxy)
+                    Console.WriteLine($"{pair.Key} : {pair.Value}");
+            }
+            else
+                Console.WriteLine("This file's metadata is null");
+
+
             var metadata = await fileStore.GetAllAsync();
 
             foreach (FileStorageMetadata file in metadata)

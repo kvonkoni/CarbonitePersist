@@ -274,6 +274,23 @@ namespace CarbonitePersist
             }).ConfigureAwait(false);
         }
 
+        public async Task SetMetadata(object id, Dictionary<string, string> metadata, CancellationToken cancellationToken = default)
+        {
+            await Task.Run(() =>
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    throw new OperationCanceledException();
+
+                var file = FindMetadataFromId(id);
+                if (file != null)
+                {
+                    var metafile = ReadMetadataFromXml(file);
+                    metafile.Metadata = metadata;
+                    WriteMetadataToXml(metafile);
+                }
+            }).ConfigureAwait(false);
+        }
+
         public async Task DeleteAsync(object id, CancellationToken cancellationToken = default)
         {
             if (cancellationToken.IsCancellationRequested)

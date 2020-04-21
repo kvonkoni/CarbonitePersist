@@ -176,6 +176,39 @@ namespace CarbonitePersist.UnitTests
         }
 
         [Fact]
+        public async Task TestSetMetadataAsync()
+        {
+            var database = Guid.NewGuid().ToString();
+            var path = Path.Combine(Path.GetTempPath(), database);
+            var ct = new CarboniteTool($"Path={path}");
+            var stor = ct.GetStorage();
+
+            var fileSource = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\filesource";
+
+            await stor.UploadAsync(1, $"{Path.Combine(fileSource, "This is a test file.docx")}");
+
+            var oldmeta = await stor.GetByIdAsync(1);
+
+            Assert.Null(oldmeta.Metadata);
+
+            var metadata = new Dictionary<string, string>
+            {
+                {"key1" , "value1" },
+                {"key2" , "value2" },
+                {"key3" , "value3" },
+                {"key4" , "value4" },
+            };
+
+            await stor.SetMetadata(1, metadata);
+
+            var newmeta = await stor.GetByIdAsync(1);
+
+            Assert.Equal(metadata, newmeta.Metadata);
+
+            Directory.Delete(path, true);
+        }
+
+        [Fact]
         public async Task TestDeleteAsync()
         {
             var database = Guid.NewGuid().ToString();
