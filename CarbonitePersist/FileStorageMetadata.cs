@@ -24,34 +24,28 @@ namespace CarbonitePersist
         
         public DateTime UploadDate { get; set; }
         
-        public List<SerializableKeyValuePair<string, string>> XMLMetadataProxy
+        public List<SerializableKeyValuePair<string, string>> XMLMetadataProxy { get; set; }
+
+        [XmlIgnore]
+        public Dictionary<string, string> Metadata
         {
             get
             {
-                var proxy = new List<SerializableKeyValuePair<string, string>>();
-                if (Metadata != null)
-                {
-                    foreach (KeyValuePair<string, string> pair in Metadata)
-                    {
-                        proxy.Add(new SerializableKeyValuePair<string, string>
-                        {
-                            Key = pair.Key,
-                            Value = pair.Value,
-                        });
-                    }
-                }
-                return proxy;
+                var dictionary = new Dictionary<string, string>();
+                foreach (SerializableKeyValuePair<string, string> pair in XMLMetadataProxy)
+                    dictionary.Add(pair.Key, pair.Value);
+                return dictionary;
             }
             set
             {
-                Metadata = new Dictionary<string, string>();
-                foreach (SerializableKeyValuePair<string, string> pair in value)
-                    Metadata.Add(pair.Key, pair.Value);
-                XMLMetadataProxy = value;
+                var xmlMetadataProxy = new List<SerializableKeyValuePair<string, string>>();
+                foreach (KeyValuePair<string, string> pair in value)
+                    xmlMetadataProxy.Add(new SerializableKeyValuePair<string, string> { 
+                        Key = pair.Key,
+                        Value = pair.Value,
+                    });
+                XMLMetadataProxy = xmlMetadataProxy;
             }
         }
-
-        [XmlIgnore]
-        public Dictionary<string, string> Metadata { get; set; }
     }
 }

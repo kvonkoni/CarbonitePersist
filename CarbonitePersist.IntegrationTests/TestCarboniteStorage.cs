@@ -189,7 +189,7 @@ namespace CarbonitePersist.UnitTests
 
             var oldmeta = await stor.GetByIdAsync(1);
 
-            Assert.Null(oldmeta.Metadata);
+            Assert.Empty(oldmeta.Metadata);
 
             var metadata = new Dictionary<string, string>
             {
