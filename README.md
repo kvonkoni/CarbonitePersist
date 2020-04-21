@@ -125,16 +125,32 @@ class Program
         await fileStore.UploadAsync(2, @"C:\Temp\filesource\broken.pdf");
         await fileStore.UploadAsync(3, @"C:\Temp\filesource\letter.txt");
 
-        await fileStore.UpdateDescription(3, "this is a description");
+        var dict = new Dictionary<string, string>
+        {
+            {"Description" , "This is a description" },
+            {"key2" , "value2" },
+            {"key3" , "value3" },
+            {"key4" , "value4" },
+        };
+
+        await fileStore.SetMetadata(2, dict);
+
+        var meta = await fileStore.GetByIdAsync(2);
 
         var metadata = await fileStore.GetAllAsync();
 
         foreach (FileStorageMetadata file in metadata)
         {
-            if (file.Description != null)
-                Console.WriteLine($"There is a file called {file.Filename} with ID {file.Id} and description \"{file.Description}\" in storage");
+            if (file.Metadata.Count > 0)
+            {
+                Console.WriteLine($"There is a file called \"{file.Filename}\" with ID {file.Id} in storage. It has metadata:");
+                foreach (KeyValuePair<string, string> pair in file.Metadata)
+                {
+                    Console.WriteLine($"    Key: {pair.Key}, Value: {pair.Value}");
+                }
+            }
             else
-                Console.WriteLine($"There is a file called {file.Filename} with ID {file.Id} and no description in storage");
+                Console.WriteLine($"There is a file called \"{file.Filename}\" with ID {file.Id} in storage. It has no metadata.");
         }
 
         await fileStore.DownloadAsync(metadata[0].Id, $"C:\\Temp\\filedest\\{metadata[0].Filename}", true);
