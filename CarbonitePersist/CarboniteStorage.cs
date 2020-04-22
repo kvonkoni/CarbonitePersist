@@ -46,6 +46,18 @@ namespace CarbonitePersist
             WriteMetadataToXml(metadata);
         }
 
+        private FileStream OpenFileStreamInStorage(object id, string filename)
+        {
+            var metadata = new FileStorageMetadata
+            {
+                Id = id,
+                Filename = filename,
+                UploadDate = DateTime.Now,
+            };
+            WriteMetadataToXml(metadata);
+            return new FileStream(Path.Combine(_ct.storagePath, $"{id}.bin"), FileMode.Create);
+        }
+
         private void WriteMetadataToXml(FileStorageMetadata metadata)
         {
             using var writer = new StreamWriter(Path.Combine(_ct.storageMetadataPath, $"{metadata.Id}.xml"));
@@ -61,6 +73,11 @@ namespace CarbonitePersist
         private void RetrieveFileFromStorage(string source, string destination, bool overwrite = false)
         {
             File.Copy(source, destination, overwrite);
+        }
+
+        public FileStream RetrieveFileStreamFromStorage(string sourceStream)
+        {
+            return File.Open(sourceStream, FileMode.Open);
         }
 
         private string FindFileById(object id)
@@ -117,6 +134,14 @@ namespace CarbonitePersist
                     CopyFileToStorage(ids[i], sources[i]);
                 }
             }).ConfigureAwait(false);
+        }
+
+        public async Task UploadAsync(object id, string filename, Stream stream, CancellationToken cancellationToken = default)
+        {
+            using (FileStream DestinationStream = OpenFileStreamInStorage(id, filename))
+            {
+                await stream.CopyToAsync(stream, cancellationToken);
+            }
         }
 
         public async Task<FileStorageMetadata[]> GetAllAsync(CancellationToken cancellationToken = default)
@@ -196,19 +221,11 @@ namespace CarbonitePersist
             await DownloadAsync(ids, destinations, false, cancellationToken).ConfigureAwait(false);
         }
 
-        public FileStream OpenStreamById(object id)
+        public async Task CopyFileToStreamAsync(object id, Stream stream, CancellationToken cancellationToken = default)
         {
-            return File.Open(FindFileById(id), FileMode.Open);
-        }
-
-        public async Task CopyToAsync(object id, Stream stream, CancellationToken cancellationToken = default)
-        {
-            using (FileStream SourceStream = OpenStreamById(id))
+            using (FileStream SourceStream = RetrieveFileStreamFromStorage(FindFileById(id)))
             {
-                using (stream)
-                {
-                    await SourceStream.CopyToAsync(stream, cancellationToken);
-                }
+                await SourceStream.CopyToAsync(stream, cancellationToken);
             }
         }
 
