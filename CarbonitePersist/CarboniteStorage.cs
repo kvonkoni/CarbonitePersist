@@ -66,7 +66,7 @@ namespace CarbonitePersist
 
         private FileStorageMetadata ReadMetadataFromXml(string path)
         {
-            using var stream = new FileStream(Path.Combine(_ct.storageMetadataPath, path), FileMode.Open);
+            using var stream = new FileStream(Path.Combine(_ct.storageMetadataPath, path), FileMode.Open, FileAccess.Read, FileShare.Read);
             return (FileStorageMetadata)serializer.Deserialize(stream);
         }
 
