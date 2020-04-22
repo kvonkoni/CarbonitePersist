@@ -138,10 +138,20 @@ namespace CarbonitePersist
 
         public async Task UploadAsync(object id, string filename, Stream stream, CancellationToken cancellationToken = default)
         {
-            using (FileStream DestinationStream = OpenFileStreamInStorage(id, filename))
+            using (FileStream destinationStream = OpenFileStreamInStorage(id, filename))
             {
-                await stream.CopyToAsync(stream, cancellationToken);
+                await stream.CopyToAsync(destinationStream, cancellationToken).ConfigureAwait(false);
             }
+        }
+
+        public async Task UploadAsync(IReadOnlyList<object> ids, IReadOnlyList<string> filenames, IReadOnlyList<Stream> streams, CancellationToken cancellationToken = default)
+        {
+            var list = new List<Task>();
+            for (int i = 0; i < ids.Count; i++)
+            {
+                list.Add(UploadAsync(ids[i], filenames[i], streams[i], cancellationToken));
+            }
+            await Task.WhenAll(list).ConfigureAwait(false);
         }
 
         public async Task<FileStorageMetadata[]> GetAllAsync(CancellationToken cancellationToken = default)
@@ -223,10 +233,18 @@ namespace CarbonitePersist
 
         public async Task CopyFileToStreamAsync(object id, Stream stream, CancellationToken cancellationToken = default)
         {
-            using (FileStream SourceStream = RetrieveFileStreamFromStorage(FindFileById(id)))
+            using (FileStream sourceStream = RetrieveFileStreamFromStorage(FindFileById(id)))
             {
-                await SourceStream.CopyToAsync(stream, cancellationToken);
+                await sourceStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
             }
+        }
+
+        public async Task CopyFileToStreamAsync(IReadOnlyList<object> ids, IReadOnlyList<Stream> streams, CancellationToken cancellationToken = default)
+        {
+            var list = new List<Task>();
+            for (int i = 0; i < ids.Count; i++)
+                list.Add(CopyFileToStreamAsync(ids[i], streams[i], cancellationToken));
+            await Task.WhenAll(list).ConfigureAwait(false);
         }
 
         public async Task SetFilename(object id, string filename, CancellationToken cancellationToken = default)

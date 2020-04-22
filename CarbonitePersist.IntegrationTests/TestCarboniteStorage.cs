@@ -41,6 +41,47 @@ namespace CarbonitePersist.UnitTests
         }
 
         [Fact]
+        public async Task TestUploadStreamingAsync()
+        {
+            var database = Guid.NewGuid().ToString();
+            var path = Path.Combine(Path.GetTempPath(), database);
+            var ct = new CarboniteTool($"Path={path}");
+            var stor = ct.GetStorage();
+
+            var fileSource = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\filesource";
+
+            using (var sourceStream = new FileStream($"{Path.Combine(fileSource, "This is a test file.docx")}", FileMode.Open))
+                await stor.UploadAsync(1, "This is an uploaded test file.docx", sourceStream);
+
+            var file = await stor.GetByIdAsync(1);
+
+            Assert.Equal("This is an uploaded test file.docx", file.Filename);
+
+            Directory.Delete(path, true);
+        }
+
+        [Fact]
+        public async Task TestUploadStreamingOverloadAsync()
+        {
+            var database = Guid.NewGuid().ToString();
+            var path = Path.Combine(Path.GetTempPath(), database);
+            var ct = new CarboniteTool($"Path={path}");
+            var stor = ct.GetStorage();
+
+            var fileSource = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\filesource";
+
+            using (var sourceStream1 = new FileStream($"{Path.Combine(fileSource, "This is a test file.docx")}", FileMode.Open))
+            using (var sourceStream2 = new FileStream($"{Path.Combine(fileSource, "broken.pdf")}", FileMode.Open))
+                await stor.UploadAsync(new List<object> { 1, 2 }, new List<string> { "This is an uploaded test file.docx", "broken.pdf" }, new List<Stream> { sourceStream1, sourceStream2 });
+
+            var file = await stor.GetByIdAsync(1);
+
+            Assert.Equal("This is an uploaded test file.docx", file.Filename);
+
+            Directory.Delete(path, true);
+        }
+
+        [Fact]
         public async Task TestGetAllAsync()
         {
             var path = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\CarboniteTest";
@@ -120,6 +161,42 @@ namespace CarbonitePersist.UnitTests
             var destination2 = Path.Combine(Path.GetTempPath(), randomName2);
 
             await stor.DownloadAsync(new List<object> { 1, 2 }, new List<string> { destination1, destination2 });
+
+            File.Delete(destination1);
+            File.Delete(destination2);
+        }
+
+        [Fact]
+        public async Task TestCopyToStreamAsync()
+        {
+            var path = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\CarboniteTest";
+            var ct = new CarboniteTool($"Path={path}");
+            var stor = ct.GetStorage();
+
+            var randomName = Guid.NewGuid().ToString();
+            var destination = Path.Combine(Path.GetTempPath(), randomName);
+
+            using (var destinationStream = new FileStream(destination, FileMode.Create))
+                await stor.CopyFileToStreamAsync(1, destinationStream);
+
+            File.Delete(destination);
+        }
+
+        [Fact]
+        public async Task TestCopyToStreamOverloadAsync()
+        {
+            var path = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\CarboniteTest";
+            var ct = new CarboniteTool($"Path={path}");
+            var stor = ct.GetStorage();
+
+            var randomName1 = Guid.NewGuid().ToString();
+            var randomName2 = Guid.NewGuid().ToString();
+            var destination1 = Path.Combine(Path.GetTempPath(), randomName1);
+            var destination2 = Path.Combine(Path.GetTempPath(), randomName2);
+
+            using (var destinationStream1 = new FileStream(destination1, FileMode.Create))
+            using (var destinationStream2 = new FileStream(destination2, FileMode.Create))
+                await stor.CopyFileToStreamAsync(new List<object> { 1, 2 }, new List<Stream> { destinationStream1, destinationStream2 });
 
             File.Delete(destination1);
             File.Delete(destination2);
