@@ -196,6 +196,22 @@ namespace CarbonitePersist
             await DownloadAsync(ids, destinations, false, cancellationToken).ConfigureAwait(false);
         }
 
+        public FileStream OpenStreamById(object id)
+        {
+            return File.Open(FindFileById(id), FileMode.Open);
+        }
+
+        public async Task CopyToAsync(object id, Stream stream, CancellationToken cancellationToken = default)
+        {
+            using (FileStream SourceStream = OpenStreamById(id))
+            {
+                using (stream)
+                {
+                    await SourceStream.CopyToAsync(stream, cancellationToken);
+                }
+            }
+        }
+
         public async Task SetFilename(object id, string filename, CancellationToken cancellationToken = default)
         {
             await Task.Run(() =>
