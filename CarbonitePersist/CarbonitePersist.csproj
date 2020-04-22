@@ -10,7 +10,7 @@
     <AssemblyVersion>0.4.5.0</AssemblyVersion>
     <FileVersion>0.4.5.0</FileVersion>
     <PackageReleaseNotes>* Improved file streaming abilities</PackageReleaseNotes>
-    <Version>0.4.5-alpha</Version>
+    <Version>0.4.5</Version>
     <Copyright>Copyright 2020 Kier von Konigslow</Copyright>
     <RepositoryUrl>https://github.com/kvonkoni/CarbonitePersist</RepositoryUrl>
   </PropertyGroup>
