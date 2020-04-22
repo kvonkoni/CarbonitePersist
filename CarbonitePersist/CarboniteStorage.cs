@@ -46,6 +46,18 @@ namespace CarbonitePersist
             WriteMetadataToXml(metadata);
         }
 
+        private FileStream OpenFileStreamInStorage(object id, string filename)
+        {
+            var metadata = new FileStorageMetadata
+            {
+                Id = id,
+                Filename = filename,
+                UploadDate = DateTime.Now,
+            };
+            WriteMetadataToXml(metadata);
+            return new FileStream(Path.Combine(_ct.storagePath, $"{id}.bin"), FileMode.Create, FileAccess.Write);
+        }
+
         private void WriteMetadataToXml(FileStorageMetadata metadata)
         {
             using var writer = new StreamWriter(Path.Combine(_ct.storageMetadataPath, $"{metadata.Id}.xml"));
@@ -54,13 +66,18 @@ namespace CarbonitePersist
 
         private FileStorageMetadata ReadMetadataFromXml(string path)
         {
-            using var stream = new FileStream(Path.Combine(_ct.storageMetadataPath, path), FileMode.Open);
+            using var stream = new FileStream(Path.Combine(_ct.storageMetadataPath, path), FileMode.Open, FileAccess.Read, FileShare.Read);
             return (FileStorageMetadata)serializer.Deserialize(stream);
         }
 
         private void RetrieveFileFromStorage(string source, string destination, bool overwrite = false)
         {
             File.Copy(source, destination, overwrite);
+        }
+
+        public FileStream RetrieveFileStreamFromStorage(string sourceStream)
+        {
+            return File.Open(sourceStream, FileMode.Open, FileAccess.Read, FileShare.Read);
         }
 
         private string FindFileById(object id)
@@ -117,6 +134,37 @@ namespace CarbonitePersist
                     CopyFileToStorage(ids[i], sources[i]);
                 }
             }).ConfigureAwait(false);
+        }
+
+        public async Task UploadAsync(object id, string filename, Stream stream, CancellationToken cancellationToken = default)
+        {
+            using (FileStream destinationStream = OpenFileStreamInStorage(id, filename))
+            {
+                await stream.CopyToAsync(destinationStream, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        public async Task UploadAsync(IReadOnlyList<object> ids, IReadOnlyList<string> filenames, IReadOnlyList<Stream> streams, CancellationToken cancellationToken = default)
+        {
+            var list = new List<Task>();
+            for (int i = 0; i < ids.Count; i++)
+            {
+                list.Add(UploadAsync(ids[i], filenames[i], streams[i], cancellationToken));
+            }
+            await Task.WhenAll(list).ConfigureAwait(false);
+        }
+
+        public async Task<FileStream> OpenWriteStream(object id, string filename, CancellationToken cancellationToken = default)
+        {
+            return await Task.Run(() => OpenFileStreamInStorage(id, filename), cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<IReadOnlyList<FileStream>> OpenWriteStreams(IReadOnlyList<object> ids, IReadOnlyList<string> filenames, CancellationToken cancellationToken = default)
+        {
+            var list = new List<Task<FileStream>>();
+            for (int i = 0; i < ids.Count; i++)
+                list.Add(OpenWriteStream(ids[i], filenames[i], cancellationToken));
+            return await Task.WhenAll(list).ConfigureAwait(false);
         }
 
         public async Task<FileStorageMetadata[]> GetAllAsync(CancellationToken cancellationToken = default)
@@ -194,6 +242,35 @@ namespace CarbonitePersist
         public async Task DownloadAsync(IReadOnlyList<object> ids, IReadOnlyList<string> destinations, CancellationToken cancellationToken = default)
         {
             await DownloadAsync(ids, destinations, false, cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task CopyFileToStreamAsync(object id, Stream stream, CancellationToken cancellationToken = default)
+        {
+            using (FileStream sourceStream = RetrieveFileStreamFromStorage(FindFileById(id)))
+            {
+                await sourceStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        public async Task CopyFileToStreamAsync(IReadOnlyList<object> ids, IReadOnlyList<Stream> streams, CancellationToken cancellationToken = default)
+        {
+            var list = new List<Task>();
+            for (int i = 0; i < ids.Count; i++)
+                list.Add(CopyFileToStreamAsync(ids[i], streams[i], cancellationToken));
+            await Task.WhenAll(list).ConfigureAwait(false);
+        }
+
+        public async Task<FileStream> OpenReadStreamAsync(object id, CancellationToken cancellationToken = default)
+        {
+            return await Task.Run(() => RetrieveFileStreamFromStorage(FindFileById(id)), cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<IReadOnlyList<FileStream>> OpenReadStreamsAsync(IReadOnlyList<object> ids, CancellationToken cancellationToken = default)
+        {
+            var list = new List<Task<FileStream>>();
+            foreach (object id in ids)
+                list.Add(OpenReadStreamAsync(id, cancellationToken));
+            return await Task.WhenAll(list).ConfigureAwait(false);
         }
 
         public async Task SetFilename(object id, string filename, CancellationToken cancellationToken = default)

@@ -11,6 +11,14 @@ namespace CarbonitePersist
 
         internal readonly string path;
 
+        public string CabronitePath
+        {
+            get
+            {
+                return path;
+            }
+        }
+
         internal readonly string collectionPath;
 
         internal readonly string storagePath;
