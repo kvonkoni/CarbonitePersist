@@ -154,6 +154,19 @@ namespace CarbonitePersist
             await Task.WhenAll(list).ConfigureAwait(false);
         }
 
+        public async Task<FileStream> OpenWriteStream(object id, string filename, CancellationToken cancellationToken = default)
+        {
+            return await Task.Run(() => OpenFileStreamInStorage(id, filename), cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<IReadOnlyList<FileStream>> OpenWriteStreams(IReadOnlyList<object> ids, IReadOnlyList<string> filenames, CancellationToken cancellationToken = default)
+        {
+            var list = new List<Task<FileStream>>();
+            for (int i = 0; i < ids.Count; i++)
+                list.Add(OpenWriteStream(ids[i], filenames[i], cancellationToken));
+            return await Task.WhenAll(list).ConfigureAwait(false);
+        }
+
         public async Task<FileStorageMetadata[]> GetAllAsync(CancellationToken cancellationToken = default)
         {
             var result = new List<FileStorageMetadata>();
@@ -245,6 +258,19 @@ namespace CarbonitePersist
             for (int i = 0; i < ids.Count; i++)
                 list.Add(CopyFileToStreamAsync(ids[i], streams[i], cancellationToken));
             await Task.WhenAll(list).ConfigureAwait(false);
+        }
+
+        public async Task<FileStream> OpenReadStreamAsync(object id, CancellationToken cancellationToken = default)
+        {
+            return await Task.Run(() => RetrieveFileStreamFromStorage(FindFileById(id)), cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<IReadOnlyList<FileStream>> OpenReadStreamsAsync(IReadOnlyList<object> ids, CancellationToken cancellationToken = default)
+        {
+            var list = new List<Task<FileStream>>();
+            foreach (object id in ids)
+                list.Add(OpenReadStreamAsync(id, cancellationToken));
+            return await Task.WhenAll(list).ConfigureAwait(false);
         }
 
         public async Task SetFilename(object id, string filename, CancellationToken cancellationToken = default)
