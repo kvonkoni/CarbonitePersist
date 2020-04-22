@@ -55,7 +55,7 @@ namespace CarbonitePersist
                 UploadDate = DateTime.Now,
             };
             WriteMetadataToXml(metadata);
-            return new FileStream(Path.Combine(_ct.storagePath, $"{id}.bin"), FileMode.Create);
+            return new FileStream(Path.Combine(_ct.storagePath, $"{id}.bin"), FileMode.Create, FileAccess.Write);
         }
 
         private void WriteMetadataToXml(FileStorageMetadata metadata)
@@ -77,7 +77,7 @@ namespace CarbonitePersist
 
         public FileStream RetrieveFileStreamFromStorage(string sourceStream)
         {
-            return File.Open(sourceStream, FileMode.Open);
+            return File.Open(sourceStream, FileMode.Open, FileAccess.Read, FileShare.Read);
         }
 
         private string FindFileById(object id)
