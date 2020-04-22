@@ -9,8 +9,6 @@ namespace CarbonitePersist
 {
     public class CarboniteStorage
     {
-        private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
-
         private readonly CarboniteTool _ct;
 
         private readonly XmlSerializer serializer = new XmlSerializer(typeof(FileStorageMetadata));
@@ -41,29 +39,45 @@ namespace CarbonitePersist
             var metadata = new FileStorageMetadata
             {
                 Id = id,
-                Filename = Path.GetFileName(source)
+                Filename = Path.GetFileName(source),
+                UploadDate = DateTime.Now,
             };
             File.Copy(source, Path.Combine(_ct.storagePath, $"{id}.bin"), true);
-            _log.Info($"Copied {source} into Carbonite");
             WriteMetadataToXml(metadata);
+        }
+
+        private FileStream OpenFileStreamInStorage(object id, string filename)
+        {
+            var metadata = new FileStorageMetadata
+            {
+                Id = id,
+                Filename = filename,
+                UploadDate = DateTime.Now,
+            };
+            WriteMetadataToXml(metadata);
+            return new FileStream(Path.Combine(_ct.storagePath, $"{id}.bin"), FileMode.Create, FileAccess.Write);
         }
 
         private void WriteMetadataToXml(FileStorageMetadata metadata)
         {
             using var writer = new StreamWriter(Path.Combine(_ct.storageMetadataPath, $"{metadata.Id}.xml"));
             serializer.Serialize(writer, metadata);
-            _log.Info($"Inserted {metadata} into Carbonite");
         }
 
         private FileStorageMetadata ReadMetadataFromXml(string path)
         {
-            using var stream = new FileStream(Path.Combine(_ct.storageMetadataPath, path), FileMode.Open);
+            using var stream = new FileStream(Path.Combine(_ct.storageMetadataPath, path), FileMode.Open, FileAccess.Read, FileShare.Read);
             return (FileStorageMetadata)serializer.Deserialize(stream);
         }
 
         private void RetrieveFileFromStorage(string source, string destination, bool overwrite = false)
         {
             File.Copy(source, destination, overwrite);
+        }
+
+        public FileStream RetrieveFileStreamFromStorage(string sourceStream)
+        {
+            return File.Open(sourceStream, FileMode.Open, FileAccess.Read, FileShare.Read);
         }
 
         private string FindFileById(object id)
@@ -90,116 +104,107 @@ namespace CarbonitePersist
 
         public async Task UploadAsync(object id, string source, CancellationToken cancellationToken = default)
         {
-            try
+            await Task.Run(() =>
             {
-                await Task.Run(() =>
-                {
-                    if (id == null || source == null)
-                        throw new ArgumentNullException("Must provide an id and a source");
+                if (id == null || source == null)
+                    throw new ArgumentNullException("Must provide an id and a source");
 
-                    if (cancellationToken.IsCancellationRequested)
-                        throw new OperationCanceledException();
+                if (cancellationToken.IsCancellationRequested)
+                    throw new OperationCanceledException();
 
-                    CopyFileToStorage(id, source);
-                }).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                _log.Error(e);
-                throw e;
-            }
+                CopyFileToStorage(id, source);
+            }).ConfigureAwait(false);
         }
 
         public async Task UploadAsync(IReadOnlyList<object> ids, IReadOnlyList<string> sources, CancellationToken cancellationToken = default)
         {
-            try
+            if (ids == null || sources == null)
+                throw new ArgumentNullException("Must provide ids and sources");
+
+            if (!(ids.Count == sources.Count && ids.Count > 0))
+                throw new InvalidDataException("Ids and sources must have matching count");
+
+            await Task.Run(() =>
             {
-                if (ids == null || sources == null)
-                    throw new ArgumentNullException("Must provide ids and sources");
-
-                if (!(ids.Count == sources.Count && ids.Count > 0))
-                    throw new InvalidDataException("Ids and sources must have matching count");
-
-                await Task.Run(() =>
+                for (int i = 0; i < sources.Count; i++)
                 {
-                    for (int i = 0; i < sources.Count; i++)
-                    {
-                        if (cancellationToken.IsCancellationRequested)
-                            throw new OperationCanceledException();
+                    if (cancellationToken.IsCancellationRequested)
+                        throw new OperationCanceledException();
 
-                        CopyFileToStorage(ids[i], sources[i]);
-                    }
-                }).ConfigureAwait(false);
-            }
-            catch (Exception e)
+                    CopyFileToStorage(ids[i], sources[i]);
+                }
+            }).ConfigureAwait(false);
+        }
+
+        public async Task UploadAsync(object id, string filename, Stream stream, CancellationToken cancellationToken = default)
+        {
+            using (FileStream destinationStream = OpenFileStreamInStorage(id, filename))
             {
-                _log.Error(e);
-                throw e;
+                await stream.CopyToAsync(destinationStream, cancellationToken).ConfigureAwait(false);
             }
+        }
+
+        public async Task UploadAsync(IReadOnlyList<object> ids, IReadOnlyList<string> filenames, IReadOnlyList<Stream> streams, CancellationToken cancellationToken = default)
+        {
+            var list = new List<Task>();
+            for (int i = 0; i < ids.Count; i++)
+            {
+                list.Add(UploadAsync(ids[i], filenames[i], streams[i], cancellationToken));
+            }
+            await Task.WhenAll(list).ConfigureAwait(false);
+        }
+
+        public async Task<FileStream> OpenWriteStream(object id, string filename, CancellationToken cancellationToken = default)
+        {
+            return await Task.Run(() => OpenFileStreamInStorage(id, filename), cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<IReadOnlyList<FileStream>> OpenWriteStreams(IReadOnlyList<object> ids, IReadOnlyList<string> filenames, CancellationToken cancellationToken = default)
+        {
+            var list = new List<Task<FileStream>>();
+            for (int i = 0; i < ids.Count; i++)
+                list.Add(OpenWriteStream(ids[i], filenames[i], cancellationToken));
+            return await Task.WhenAll(list).ConfigureAwait(false);
         }
 
         public async Task<FileStorageMetadata[]> GetAllAsync(CancellationToken cancellationToken = default)
         {
             var result = new List<FileStorageMetadata>();
-            try
-            {
-                await Task.Run(() => {
-                    foreach (string file in StorageMetadataManifest)
-                    {
-                        if (cancellationToken.IsCancellationRequested)
-                            throw new OperationCanceledException();
+            await Task.Run(() => {
+                foreach (string file in StorageMetadataManifest)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                        throw new OperationCanceledException();
                         
-                        var metadata = ReadMetadataFromXml(file);
-                        result.Add(metadata);
-                    }
-                }).ConfigureAwait(false);
-                return result.ToArray();
-            }
-            catch (Exception e)
-            {
-                _log.Error(e);
-                throw e;
-            }
+                    var metadata = ReadMetadataFromXml(file);
+                    result.Add(metadata);
+                }
+            }).ConfigureAwait(false);
+            return result.ToArray();
         }
 
         public async Task<FileStorageMetadata> GetByIdAsync(object id, CancellationToken cancellationToken = default)
         {
-            try
-            {
-                if (cancellationToken.IsCancellationRequested)
-                    throw new OperationCanceledException();
+            if (cancellationToken.IsCancellationRequested)
+                throw new OperationCanceledException();
 
-                return await Task.Run(() => ReadMetadataFromXml(FindMetadataFromId(id))).ConfigureAwait(false);
-            }
-            catch (Exception e)
-            {
-                _log.Error(e);
-                throw e;
-            }
+            return await Task.Run(() => ReadMetadataFromXml(FindMetadataFromId(id))).ConfigureAwait(false);
         }
 
         public async Task<FileStorageMetadata[]> GetByIdsAsync(IReadOnlyList<object> ids, CancellationToken cancellationToken = default)
         {
-            try
+            var results = new List<FileStorageMetadata>();
+            await Task.Run(() =>
             {
-                var results = new List<FileStorageMetadata>();
-                await Task.Run(() =>
+                foreach (object id in ids)
                 {
-                    foreach (object id in ids)
-                    {
-                        if (cancellationToken.IsCancellationRequested)
-                            throw new OperationCanceledException();
+                    if (cancellationToken.IsCancellationRequested)
+                        throw new OperationCanceledException();
 
-                        results.Add(ReadMetadataFromXml(FindMetadataFromId(id)));
-                    }
-                }).ConfigureAwait(false);
-                return results.ToArray();
-            }
-            catch (Exception e)
-            {
-                _log.Error(e);
-                throw e;
-            }
+                    results.Add(ReadMetadataFromXml(FindMetadataFromId(id)));
+                }
+            }).ConfigureAwait(false);
+            return results.ToArray();
         }
 
         public async Task DownloadAsync(object id, string destination, bool overwrite, CancellationToken cancellationToken = default)
@@ -239,24 +244,36 @@ namespace CarbonitePersist
             await DownloadAsync(ids, destinations, false, cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task UpdateDescription(object id, string description, CancellationToken cancellationToken = default)
+        public async Task CopyFileToStreamAsync(object id, Stream stream, CancellationToken cancellationToken = default)
         {
-            await Task.Run(() =>
+            using (FileStream sourceStream = RetrieveFileStreamFromStorage(FindFileById(id)))
             {
-                if (cancellationToken.IsCancellationRequested)
-                    throw new OperationCanceledException();
-
-                var file = FindMetadataFromId(id);
-                if (file != null)
-                {
-                    var meta = ReadMetadataFromXml(file);
-                    meta.Description = description;
-                    WriteMetadataToXml(meta);
-                }
-            }).ConfigureAwait(false);
+                await sourceStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
+            }
         }
 
-        public async Task UpdateFilename(object id, string filename, CancellationToken cancellationToken = default)
+        public async Task CopyFileToStreamAsync(IReadOnlyList<object> ids, IReadOnlyList<Stream> streams, CancellationToken cancellationToken = default)
+        {
+            var list = new List<Task>();
+            for (int i = 0; i < ids.Count; i++)
+                list.Add(CopyFileToStreamAsync(ids[i], streams[i], cancellationToken));
+            await Task.WhenAll(list).ConfigureAwait(false);
+        }
+
+        public async Task<FileStream> OpenReadStreamAsync(object id, CancellationToken cancellationToken = default)
+        {
+            return await Task.Run(() => RetrieveFileStreamFromStorage(FindFileById(id)), cancellationToken).ConfigureAwait(false);
+        }
+
+        public async Task<IReadOnlyList<FileStream>> OpenReadStreamsAsync(IReadOnlyList<object> ids, CancellationToken cancellationToken = default)
+        {
+            var list = new List<Task<FileStream>>();
+            foreach (object id in ids)
+                list.Add(OpenReadStreamAsync(id, cancellationToken));
+            return await Task.WhenAll(list).ConfigureAwait(false);
+        }
+
+        public async Task SetFilename(object id, string filename, CancellationToken cancellationToken = default)
         {
             await Task.Run(() =>
             {
@@ -269,6 +286,23 @@ namespace CarbonitePersist
                     var meta = ReadMetadataFromXml(file);
                     meta.Filename = filename;
                     WriteMetadataToXml(meta);
+                }
+            }).ConfigureAwait(false);
+        }
+
+        public async Task SetMetadata(object id, Dictionary<string, string> metadata, CancellationToken cancellationToken = default)
+        {
+            await Task.Run(() =>
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    throw new OperationCanceledException();
+
+                var file = FindMetadataFromId(id);
+                if (file != null)
+                {
+                    var metafile = ReadMetadataFromXml(file);
+                    metafile.Metadata = metadata;
+                    WriteMetadataToXml(metafile);
                 }
             }).ConfigureAwait(false);
         }

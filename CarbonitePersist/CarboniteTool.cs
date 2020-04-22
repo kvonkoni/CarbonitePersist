@@ -7,11 +7,17 @@ namespace CarbonitePersist
 {
     public class CarboniteTool
     {
-        private static readonly NLog.Logger _log = NLog.LogManager.GetCurrentClassLogger();
-
         private readonly CarboniteConnectionStringBuilder _carboniteConnectionStringBuilder;
 
         internal readonly string path;
+
+        public string CabronitePath
+        {
+            get
+            {
+                return path;
+            }
+        }
 
         internal readonly string collectionPath;
 
@@ -33,28 +39,21 @@ namespace CarbonitePersist
 
         public void DbConnectionInit()
         {
-            try
+            if (!Directory.Exists(path))
             {
-                if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
-                if (!Directory.Exists(collectionPath))
-                {
-                    Directory.CreateDirectory(collectionPath);
-                }
-                if (!Directory.Exists(storagePath))
-                {
-                    Directory.CreateDirectory(storagePath);
-                }
-                if (!Directory.Exists(storageMetadataPath))
-                {
-                    Directory.CreateDirectory(storageMetadataPath);
-                }
+                Directory.CreateDirectory(path);
             }
-            catch (Exception e)
+            if (!Directory.Exists(collectionPath))
             {
-                _log.Error(e);
+                Directory.CreateDirectory(collectionPath);
+            }
+            if (!Directory.Exists(storagePath))
+            {
+                Directory.CreateDirectory(storagePath);
+            }
+            if (!Directory.Exists(storageMetadataPath))
+            {
+                Directory.CreateDirectory(storageMetadataPath);
             }
         }
 

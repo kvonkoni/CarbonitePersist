@@ -41,6 +41,47 @@ namespace CarbonitePersist.UnitTests
         }
 
         [Fact]
+        public async Task TestUploadStreamingAsync()
+        {
+            var database = Guid.NewGuid().ToString();
+            var path = Path.Combine(Path.GetTempPath(), database);
+            var ct = new CarboniteTool($"Path={path}");
+            var stor = ct.GetStorage();
+
+            var fileSource = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\filesource";
+
+            using (var sourceStream = new FileStream($"{Path.Combine(fileSource, "This is a test file.docx")}", FileMode.Open))
+                await stor.UploadAsync(1, "This is an uploaded test file.docx", sourceStream);
+
+            var file = await stor.GetByIdAsync(1);
+
+            Assert.Equal("This is an uploaded test file.docx", file.Filename);
+
+            Directory.Delete(path, true);
+        }
+
+        [Fact]
+        public async Task TestUploadStreamingOverloadAsync()
+        {
+            var database = Guid.NewGuid().ToString();
+            var path = Path.Combine(Path.GetTempPath(), database);
+            var ct = new CarboniteTool($"Path={path}");
+            var stor = ct.GetStorage();
+
+            var fileSource = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\filesource";
+
+            using (var sourceStream1 = new FileStream($"{Path.Combine(fileSource, "This is a test file.docx")}", FileMode.Open))
+            using (var sourceStream2 = new FileStream($"{Path.Combine(fileSource, "broken.pdf")}", FileMode.Open))
+                await stor.UploadAsync(new List<object> { 1, 2 }, new List<string> { "This is an uploaded test file.docx", "broken.pdf" }, new List<Stream> { sourceStream1, sourceStream2 });
+
+            var file = await stor.GetByIdAsync(1);
+
+            Assert.Equal("This is an uploaded test file.docx", file.Filename);
+
+            Directory.Delete(path, true);
+        }
+
+        [Fact]
         public async Task TestGetAllAsync()
         {
             var path = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\CarboniteTest";
@@ -126,32 +167,43 @@ namespace CarbonitePersist.UnitTests
         }
 
         [Fact]
-        public async Task TestUpdateDescriptionAsync()
+        public async Task TestCopyToStreamAsync()
         {
-            var database = Guid.NewGuid().ToString();
-            var path = Path.Combine(Path.GetTempPath(), database);
+            var path = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\CarboniteTest";
             var ct = new CarboniteTool($"Path={path}");
             var stor = ct.GetStorage();
 
-            var fileSource = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\filesource";
+            var randomName = Guid.NewGuid().ToString();
+            var destination = Path.Combine(Path.GetTempPath(), randomName);
 
-            await stor.UploadAsync(1, $"{Path.Combine(fileSource, "This is a test file.docx")}");
+            using (var destinationStream = new FileStream(destination, FileMode.Create))
+                await stor.CopyFileToStreamAsync(1, destinationStream);
 
-            var oldmeta = await stor.GetByIdAsync(1);
-
-            Assert.Null(oldmeta.Description);
-
-            await stor.UpdateDescription(1, "DESCRIPTION");
-
-            var newmeta = await stor.GetByIdAsync(1);
-
-            Assert.Equal("DESCRIPTION", newmeta.Description);
-
-            Directory.Delete(path, true);
+            File.Delete(destination);
         }
 
         [Fact]
-        public async Task TestUpdateFilenameAsync()
+        public async Task TestCopyToStreamOverloadAsync()
+        {
+            var path = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\CarboniteTest";
+            var ct = new CarboniteTool($"Path={path}");
+            var stor = ct.GetStorage();
+
+            var randomName1 = Guid.NewGuid().ToString();
+            var randomName2 = Guid.NewGuid().ToString();
+            var destination1 = Path.Combine(Path.GetTempPath(), randomName1);
+            var destination2 = Path.Combine(Path.GetTempPath(), randomName2);
+
+            using (var destinationStream1 = new FileStream(destination1, FileMode.Create))
+            using (var destinationStream2 = new FileStream(destination2, FileMode.Create))
+                await stor.CopyFileToStreamAsync(new List<object> { 1, 2 }, new List<Stream> { destinationStream1, destinationStream2 });
+
+            File.Delete(destination1);
+            File.Delete(destination2);
+        }
+
+        [Fact]
+        public async Task TestSetFilenameAsync()
         {
             var database = Guid.NewGuid().ToString();
             var path = Path.Combine(Path.GetTempPath(), database);
@@ -166,11 +218,44 @@ namespace CarbonitePersist.UnitTests
 
             Assert.Equal("This is a test file.docx", oldmeta.Filename);
 
-            await stor.UpdateFilename(1, "NewFilename.docx");
+            await stor.SetFilename(1, "NewFilename.docx");
 
             var newmeta = await stor.GetByIdAsync(1);
 
             Assert.Equal("NewFilename.docx", newmeta.Filename);
+
+            Directory.Delete(path, true);
+        }
+
+        [Fact]
+        public async Task TestSetMetadataAsync()
+        {
+            var database = Guid.NewGuid().ToString();
+            var path = Path.Combine(Path.GetTempPath(), database);
+            var ct = new CarboniteTool($"Path={path}");
+            var stor = ct.GetStorage();
+
+            var fileSource = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\filesource";
+
+            await stor.UploadAsync(1, $"{Path.Combine(fileSource, "This is a test file.docx")}");
+
+            var oldmeta = await stor.GetByIdAsync(1);
+
+            Assert.Empty(oldmeta.Metadata);
+
+            var metadata = new Dictionary<string, string>
+            {
+                {"key1" , "value1" },
+                {"key2" , "value2" },
+                {"key3" , "value3" },
+                {"key4" , "value4" },
+            };
+
+            await stor.SetMetadata(1, metadata);
+
+            var newmeta = await stor.GetByIdAsync(1);
+
+            Assert.Equal(metadata, newmeta.Metadata);
 
             Directory.Delete(path, true);
         }
