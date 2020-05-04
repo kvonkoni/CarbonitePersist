@@ -5,13 +5,13 @@ using System.Text;
 
 namespace CarbonitePersist.Entity
 {
-    public class ManifestEntity
+    public class CollectionEntity
     {
         public object Id { get; private set; }
 
         public string Filepath { get; private set; }
 
-        public ManifestEntity(string path)
+        public CollectionEntity(string path)
         {
             Id = Path.GetFileNameWithoutExtension(path);
             Filepath = path;
