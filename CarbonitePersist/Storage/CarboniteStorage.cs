@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
-namespace CarbonitePersist
+namespace CarbonitePersist.Storage
 {
     public class CarboniteStorage
     {

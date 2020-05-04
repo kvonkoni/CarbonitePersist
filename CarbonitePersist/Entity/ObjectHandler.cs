@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Dynamic;
 using System.Text;
 
-namespace CarbonitePersist
+namespace CarbonitePersist.Entity
 {
     public class ObjectHandler
     {

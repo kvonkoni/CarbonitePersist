@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using System.Xml.Serialization;
 
-namespace CarbonitePersist
+namespace CarbonitePersist.Storage
 {
     public class FileStorageMetadata
     {

@@ -1,11 +1,12 @@
-﻿using System;
+﻿using CarbonitePersist.Entity;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
-namespace CarbonitePersist
+namespace CarbonitePersist.Collection
 {
     public class CarboniteCollection<T>
     {
