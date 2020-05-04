@@ -147,6 +147,30 @@ namespace CarbonitePersist.UnitTest
         }
 
         [Fact]
+        public async Task TestFindAllAsync()
+        {
+            var path = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\CarboniteTest";
+            var ct = new CarboniteTool($"Path={path}");
+            var col = ct.GetCollection<Order>();
+
+            var orders = await col.FindAllAsync(x => x.Id == "06a1bac6-b534-421d-a130-1441fe0ef5c6");
+
+            Assert.Single(orders);
+
+            Assert.Equal(new Guid("06a1bac6-b534-421d-a130-1441fe0ef5c6"), orders[0].Id);
+            Assert.Equal(55.23, orders[0].Subtotal);
+            Assert.Equal(60.91, orders[0].Total);
+            Assert.True(orders[0].IsFilled);
+
+            Assert.Equal(2, orders[0].Customer.Id);
+            Assert.Equal("Bill", orders[0].Customer.Firstname);
+            Assert.Equal("Masterson", orders[0].Customer.Lastname);
+            Assert.Equal("bill.masterson@email.com", orders[0].Customer.Email);
+            Assert.Equal("555-1234", orders[0].Customer.Phone);
+            Assert.Equal(DateTime.Parse("2008-11-01"), orders[0].Customer.CustomerSince);
+        }
+
+        [Fact]
         public async Task TestGetByIdAsync()
         {
             var path = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + "\\CarboniteTest";

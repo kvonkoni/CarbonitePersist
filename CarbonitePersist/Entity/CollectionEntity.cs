@@ -7,11 +7,11 @@ namespace CarbonitePersist.Entity
 {
     public class CollectionEntity
     {
-        public object Id { get; private set; }
+        public string Id { get; private set; }
 
-        public string Filepath { get; private set; }
+        internal string Filepath { get; private set; }
 
-        public CollectionEntity(string path)
+        internal CollectionEntity(string path)
         {
             Id = Path.GetFileNameWithoutExtension(path);
             Filepath = path;

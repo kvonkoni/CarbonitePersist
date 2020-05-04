@@ -64,6 +64,11 @@ namespace CarbonitePersist.Collection
             return CollectionManifest.Find(x => x.Id.Equals(id));
         }
 
+        private IReadOnlyList<CollectionEntity> FindAllByPredicate(Predicate<CollectionEntity> predicate)
+        {
+            return CollectionManifest.FindAll(predicate);
+        }
+
         private void DeleteFileById(object id)
         {
             File.Delete(FindFileById(id).Filepath);
@@ -112,6 +117,22 @@ namespace CarbonitePersist.Collection
         var result = new List<T>();
             await Task.Run(() => {
                 foreach (CollectionEntity file in CollectionManifest)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                        throw new OperationCanceledException();
+
+                    var entity = ReadFromXml(file);
+                    result.Add(entity);
+                }
+            }).ConfigureAwait(false);
+            return result.ToArray();
+        }
+
+        public async Task<T[]> FindAllAsync(Predicate<CollectionEntity> predicate, CancellationToken cancellationToken = default)
+        {
+            var result = new List<T>();
+            await Task.Run(() => {
+                foreach (CollectionEntity file in FindAllByPredicate(predicate))
                 {
                     if (cancellationToken.IsCancellationRequested)
                         throw new OperationCanceledException();
