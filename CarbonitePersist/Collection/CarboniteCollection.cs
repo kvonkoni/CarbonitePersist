@@ -61,7 +61,7 @@ namespace CarbonitePersist.Collection
 
         private CollectionEntity FindFileById(object id)
         {
-            return CollectionManifest.Find(x => x.Id.Equals(id));
+            return CollectionManifest.Find(x => x.Id.Equals(id.ToString()));
         }
 
         private IReadOnlyList<CollectionEntity> FindAllByPredicate(Predicate<CollectionEntity> predicate)
