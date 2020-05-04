@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data.Common;
 
-namespace CarbonitePersist
+namespace CarbonitePersist.Connection
 {
     public class CarboniteConnectionStringBuilder
     {
