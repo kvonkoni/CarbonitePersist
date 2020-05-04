@@ -1,11 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace CarbonitePersist.Entity
 {
     public class ManifestEntity
     {
-        public string Id { get; set; }
+        public object Id { get; private set; }
+
+        public ManifestEntity(string path)
+        {
+            Id = Path.GetFileNameWithoutExtension(path);
+        }
     }
 }
