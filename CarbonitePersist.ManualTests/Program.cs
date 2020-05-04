@@ -122,6 +122,8 @@ namespace CarbonitePersist.ManualTests
 
             var meta = await fileStore.GetByIdAsync(2);
 
+            var find = await fileStore.FindAllAsync(x => x.Id == "2");
+
             var metadata = await fileStore.GetAllAsync();
 
             foreach (FileStorageMetadata file in metadata)
