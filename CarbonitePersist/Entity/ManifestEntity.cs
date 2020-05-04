@@ -9,9 +9,12 @@ namespace CarbonitePersist.Entity
     {
         public object Id { get; private set; }
 
+        public string Filepath { get; private set; }
+
         public ManifestEntity(string path)
         {
             Id = Path.GetFileNameWithoutExtension(path);
+            Filepath = path;
         }
     }
 }
