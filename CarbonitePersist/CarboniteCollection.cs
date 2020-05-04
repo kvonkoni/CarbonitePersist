@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
-namespace CarbonitePersist.Collection
+namespace CarbonitePersist
 {
     public class CarboniteCollection<T>
     {

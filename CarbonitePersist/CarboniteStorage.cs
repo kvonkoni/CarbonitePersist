@@ -1,4 +1,5 @@
 ﻿using CarbonitePersist.Entity;
+using CarbonitePersist.Storage;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
-namespace CarbonitePersist.Storage
+namespace CarbonitePersist
 {
     public class CarboniteStorage
     {
