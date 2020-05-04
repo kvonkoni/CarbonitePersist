@@ -83,6 +83,11 @@ namespace CarbonitePersist.Storage
             return StorageManifest.Find(x => x.Id.Equals(id.ToString()));
         }
 
+        private IReadOnlyList<StorageEntity> FindAllByPredicate(Predicate<StorageEntity> predicate)
+        {
+            return StorageManifest.FindAll(predicate);
+        }
+
         private void DeleteFileInStorageById(object id)
         {
             var file = FindFileById(id);
@@ -165,6 +170,22 @@ namespace CarbonitePersist.Storage
                     if (cancellationToken.IsCancellationRequested)
                         throw new OperationCanceledException();
                         
+                    var metadata = ReadMetadataFromXml(file);
+                    result.Add(metadata);
+                }
+            }).ConfigureAwait(false);
+            return result.ToArray();
+        }
+
+        public async Task<FileStorageMetadata[]> FindAllAsync(Predicate<StorageEntity> predicate, CancellationToken cancellationToken = default)
+        {
+            var result = new List<FileStorageMetadata>();
+            await Task.Run(() => {
+                foreach (StorageEntity file in FindAllByPredicate(predicate))
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                        throw new OperationCanceledException();
+
                     var metadata = ReadMetadataFromXml(file);
                     result.Add(metadata);
                 }
