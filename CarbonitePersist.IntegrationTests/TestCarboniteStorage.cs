@@ -103,6 +103,19 @@ namespace CarbonitePersist.UnitTests
         }
 
         [Fact]
+        public async Task TestFindAllAsync()
+        {
+            var path = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\CarboniteTest";
+            var ct = new CarboniteTool($"Path={path}");
+            var stor = ct.GetStorage();
+
+            var file = await stor.FindAllAsync(x => x.Id == "1");
+
+            Assert.Equal(1, file[0].Id);
+            Assert.Equal("This is a test file.docx", file[0].Filename);
+        }
+
+        [Fact]
         public async Task TestGetByIdAsync()
         {
             var path = Directory.GetParent(Environment.CurrentDirectory).Parent.Parent.FullName + @"\CarboniteTest";

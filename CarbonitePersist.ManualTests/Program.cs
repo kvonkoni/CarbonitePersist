@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CarbonitePersist.Storage;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -120,6 +121,8 @@ namespace CarbonitePersist.ManualTests
             await fileStore.SetMetadata(2, dict);
 
             var meta = await fileStore.GetByIdAsync(2);
+
+            var find = await fileStore.FindAllAsync(x => x.Id == "2");
 
             var metadata = await fileStore.GetAllAsync();
 

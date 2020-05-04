@@ -1,11 +1,12 @@
-﻿using System;
+﻿using CarbonitePersist.Entity;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
-namespace CarbonitePersist
+namespace CarbonitePersist.Storage
 {
     public class CarboniteStorage
     {
@@ -13,19 +14,16 @@ namespace CarbonitePersist
 
         private readonly XmlSerializer serializer = new XmlSerializer(typeof(FileStorageMetadata));
 
-        private List<string> StorageManifest
+        private List<StorageEntity> StorageManifest
         {
             get
             {
-                return new List<string>(Directory.GetFiles(_ct.storagePath, "*.bin", SearchOption.TopDirectoryOnly));
-            }
-        }
-
-        private List<string> StorageMetadataManifest
-        {
-            get
-            {
-                return new List<string>(Directory.GetFiles(_ct.storageMetadataPath, "*.xml", SearchOption.TopDirectoryOnly));
+                var storageEntityList = new List<StorageEntity>();
+                foreach (string file in Directory.GetFiles(_ct.storagePath, "*.bin", SearchOption.TopDirectoryOnly))
+                {
+                    storageEntityList.Add(new StorageEntity(file));
+                }
+                return storageEntityList;
             }
         }
 
@@ -60,46 +58,42 @@ namespace CarbonitePersist
 
         private void WriteMetadataToXml(FileStorageMetadata metadata)
         {
-            using var writer = new StreamWriter(Path.Combine(_ct.storageMetadataPath, $"{metadata.Id}.xml"));
+            using var writer = new StreamWriter(Path.Combine(_ct.storagePath, $"{metadata.Id}.xml"));
             serializer.Serialize(writer, metadata);
         }
 
-        private FileStorageMetadata ReadMetadataFromXml(string path)
+        private FileStorageMetadata ReadMetadataFromXml(StorageEntity file)
         {
-            using var stream = new FileStream(Path.Combine(_ct.storageMetadataPath, path), FileMode.Open, FileAccess.Read, FileShare.Read);
+            using var stream = new FileStream(file.Metapath, FileMode.Open, FileAccess.Read, FileShare.Read);
             return (FileStorageMetadata)serializer.Deserialize(stream);
         }
 
-        private void RetrieveFileFromStorage(string source, string destination, bool overwrite = false)
+        private void RetrieveFileFromStorage(StorageEntity file, string destination, bool overwrite = false)
         {
-            File.Copy(source, destination, overwrite);
+            File.Copy(file.Filepath, destination, overwrite);
         }
 
-        public FileStream RetrieveFileStreamFromStorage(string sourceStream)
+        public FileStream RetrieveFileStreamFromStorage(StorageEntity file)
         {
-            return File.Open(sourceStream, FileMode.Open, FileAccess.Read, FileShare.Read);
+            return File.Open(file.Filepath, FileMode.Open, FileAccess.Read, FileShare.Read);
         }
 
-        private string FindFileById(object id)
+        private StorageEntity FindFileById(object id)
         {
-            return StorageManifest.Find(x => Path.GetFileName(x).Equals($"{id}.bin"));
+            return StorageManifest.Find(x => x.Id.Equals(id.ToString()));
         }
 
-        private string FindMetadataFromId(object id)
+        private IReadOnlyList<StorageEntity> FindAllByPredicate(Predicate<StorageEntity> predicate)
         {
-            return StorageMetadataManifest.Find(x => Path.GetFileName(x).Equals($"{id}.xml"));
+            return StorageManifest.FindAll(predicate);
         }
 
         private void DeleteFileInStorageById(object id)
         {
-            File.Delete(FindFileById(id));
-            if (FindMetadataFromId(id) != null)
-                File.Delete(FindMetadataFromId(id));
-        }
-
-        private string GetIdFromFileName(string file)
-        {
-            return Path.GetFileNameWithoutExtension(file);
+            var file = FindFileById(id);
+            File.Delete(file.Filepath);
+            if (file.Metapath != null)
+                File.Delete(file.Metapath);
         }
 
         public async Task UploadAsync(object id, string source, CancellationToken cancellationToken = default)
@@ -138,10 +132,8 @@ namespace CarbonitePersist
 
         public async Task UploadAsync(object id, string filename, Stream stream, CancellationToken cancellationToken = default)
         {
-            using (FileStream destinationStream = OpenFileStreamInStorage(id, filename))
-            {
-                await stream.CopyToAsync(destinationStream, cancellationToken).ConfigureAwait(false);
-            }
+            using FileStream destinationStream = OpenFileStreamInStorage(id, filename);
+            await stream.CopyToAsync(destinationStream, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task UploadAsync(IReadOnlyList<object> ids, IReadOnlyList<string> filenames, IReadOnlyList<Stream> streams, CancellationToken cancellationToken = default)
@@ -171,11 +163,27 @@ namespace CarbonitePersist
         {
             var result = new List<FileStorageMetadata>();
             await Task.Run(() => {
-                foreach (string file in StorageMetadataManifest)
+                foreach (StorageEntity file in StorageManifest)
                 {
                     if (cancellationToken.IsCancellationRequested)
                         throw new OperationCanceledException();
                         
+                    var metadata = ReadMetadataFromXml(file);
+                    result.Add(metadata);
+                }
+            }).ConfigureAwait(false);
+            return result.ToArray();
+        }
+
+        public async Task<FileStorageMetadata[]> FindAllAsync(Predicate<StorageEntity> predicate, CancellationToken cancellationToken = default)
+        {
+            var result = new List<FileStorageMetadata>();
+            await Task.Run(() => {
+                foreach (StorageEntity file in FindAllByPredicate(predicate))
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                        throw new OperationCanceledException();
+
                     var metadata = ReadMetadataFromXml(file);
                     result.Add(metadata);
                 }
@@ -188,7 +196,7 @@ namespace CarbonitePersist
             if (cancellationToken.IsCancellationRequested)
                 throw new OperationCanceledException();
 
-            return await Task.Run(() => ReadMetadataFromXml(FindMetadataFromId(id))).ConfigureAwait(false);
+            return await Task.Run(() => ReadMetadataFromXml(FindFileById(id))).ConfigureAwait(false);
         }
 
         public async Task<FileStorageMetadata[]> GetByIdsAsync(IReadOnlyList<object> ids, CancellationToken cancellationToken = default)
@@ -201,7 +209,7 @@ namespace CarbonitePersist
                     if (cancellationToken.IsCancellationRequested)
                         throw new OperationCanceledException();
 
-                    results.Add(ReadMetadataFromXml(FindMetadataFromId(id)));
+                    results.Add(ReadMetadataFromXml(FindFileById(id)));
                 }
             }).ConfigureAwait(false);
             return results.ToArray();
@@ -246,10 +254,8 @@ namespace CarbonitePersist
 
         public async Task CopyFileToStreamAsync(object id, Stream stream, CancellationToken cancellationToken = default)
         {
-            using (FileStream sourceStream = RetrieveFileStreamFromStorage(FindFileById(id)))
-            {
-                await sourceStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
-            }
+            using FileStream sourceStream = RetrieveFileStreamFromStorage(FindFileById(id));
+            await sourceStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task CopyFileToStreamAsync(IReadOnlyList<object> ids, IReadOnlyList<Stream> streams, CancellationToken cancellationToken = default)
@@ -280,7 +286,7 @@ namespace CarbonitePersist
                 if (cancellationToken.IsCancellationRequested)
                     throw new OperationCanceledException();
 
-                var file = FindMetadataFromId(id);
+                var file = FindFileById(id);
                 if (file != null)
                 {
                     var meta = ReadMetadataFromXml(file);
@@ -297,7 +303,7 @@ namespace CarbonitePersist
                 if (cancellationToken.IsCancellationRequested)
                     throw new OperationCanceledException();
 
-                var file = FindMetadataFromId(id);
+                var file = FindFileById(id);
                 if (file != null)
                 {
                     var metafile = ReadMetadataFromXml(file);
@@ -309,10 +315,12 @@ namespace CarbonitePersist
 
         public async Task DeleteAsync(object id, CancellationToken cancellationToken = default)
         {
-            if (cancellationToken.IsCancellationRequested)
-                throw new OperationCanceledException();
+            await Task.Run(() => {
+                if (cancellationToken.IsCancellationRequested)
+                    throw new OperationCanceledException();
 
-            await Task.Run(() => DeleteFileInStorageById(id)).ConfigureAwait(false);
+                DeleteFileInStorageById(id);
+            }).ConfigureAwait(false);
         }
 
         public async Task DeleteMultipleAsync(List<object> ids, CancellationToken cancellationToken = default)
@@ -331,12 +339,12 @@ namespace CarbonitePersist
         public async Task DeleteAllAsync(CancellationToken cancellationToken = default)
         {
             await Task.Run(() => {
-                foreach (string file in StorageManifest)
+                foreach (StorageEntity file in StorageManifest)
                 {
                     if (cancellationToken.IsCancellationRequested)
                         throw new OperationCanceledException();
                     
-                    DeleteFileInStorageById(GetIdFromFileName(file));
+                    DeleteFileInStorageById(file.Id);
                 }
             }).ConfigureAwait(false);
         }

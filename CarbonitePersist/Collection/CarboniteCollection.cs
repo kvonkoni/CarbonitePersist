@@ -1,11 +1,12 @@
-﻿using System;
+﻿using CarbonitePersist.Entity;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 
-namespace CarbonitePersist
+namespace CarbonitePersist.Collection
 {
     public class CarboniteCollection<T>
     {
@@ -15,11 +16,15 @@ namespace CarbonitePersist
 
         private readonly XmlSerializer serializer = new XmlSerializer(typeof(TEntity<T>));
 
-        private List<string> CollectionManifest
+        private List<CollectionEntity> CollectionManifest
         {
             get
             {
-                return new List<string>(Directory.GetFiles(_collectionPath, "*.xml", SearchOption.TopDirectoryOnly));
+                var collectionEntityList = new List<CollectionEntity>();
+                var fileManifest = Directory.GetFiles(_collectionPath, "*.xml", SearchOption.TopDirectoryOnly);
+                foreach (string file in fileManifest)
+                    collectionEntityList.Add(new CollectionEntity(file));
+                return collectionEntityList;
             }
         }
 
@@ -54,19 +59,24 @@ namespace CarbonitePersist
             serializer.Serialize(writer, entity);
         }
 
-        private string FindFileById(object id)
+        private CollectionEntity FindFileById(object id)
         {
-            return CollectionManifest.Find(x => Path.GetFileName(x).Equals($"{id}.xml"));
+            return CollectionManifest.Find(x => x.Id.Equals(id.ToString()));
+        }
+
+        private IReadOnlyList<CollectionEntity> FindAllByPredicate(Predicate<CollectionEntity> predicate)
+        {
+            return CollectionManifest.FindAll(predicate);
         }
 
         private void DeleteFileById(object id)
         {
-            File.Delete(FindFileById(id));
+            File.Delete(FindFileById(id).Filepath);
         }
 
-        private T ReadFromXml(string path)
+        private T ReadFromXml(CollectionEntity file)
         {
-            using var stream = new FileStream(Path.Combine(_collectionPath, path), FileMode.Open);
+            using var stream = new FileStream(file.Filepath, FileMode.Open);
             var entity = (TEntity<T>)serializer.Deserialize(stream);
             return entity.Entity;
         }
@@ -106,7 +116,23 @@ namespace CarbonitePersist
         {
         var result = new List<T>();
             await Task.Run(() => {
-                foreach (string file in CollectionManifest)
+                foreach (CollectionEntity file in CollectionManifest)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                        throw new OperationCanceledException();
+
+                    var entity = ReadFromXml(file);
+                    result.Add(entity);
+                }
+            }).ConfigureAwait(false);
+            return result.ToArray();
+        }
+
+        public async Task<T[]> FindAllAsync(Predicate<CollectionEntity> predicate, CancellationToken cancellationToken = default)
+        {
+            var result = new List<T>();
+            await Task.Run(() => {
+                foreach (CollectionEntity file in FindAllByPredicate(predicate))
                 {
                     if (cancellationToken.IsCancellationRequested)
                         throw new OperationCanceledException();
@@ -171,12 +197,12 @@ namespace CarbonitePersist
         {
             await Task.Run(() =>
             {
-                foreach (string file in CollectionManifest)
+                foreach (CollectionEntity file in CollectionManifest)
                 {
                     if (cancellationToken.IsCancellationRequested)
                         throw new OperationCanceledException();
 
-                    File.Delete(file);
+                    File.Delete(file.Filepath);
                 }
             }).ConfigureAwait(false);
         }
