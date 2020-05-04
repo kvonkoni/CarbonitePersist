@@ -132,10 +132,8 @@ namespace CarbonitePersist.Storage
 
         public async Task UploadAsync(object id, string filename, Stream stream, CancellationToken cancellationToken = default)
         {
-            using (FileStream destinationStream = OpenFileStreamInStorage(id, filename))
-            {
-                await stream.CopyToAsync(destinationStream, cancellationToken).ConfigureAwait(false);
-            }
+            using FileStream destinationStream = OpenFileStreamInStorage(id, filename);
+            await stream.CopyToAsync(destinationStream, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task UploadAsync(IReadOnlyList<object> ids, IReadOnlyList<string> filenames, IReadOnlyList<Stream> streams, CancellationToken cancellationToken = default)
@@ -256,10 +254,8 @@ namespace CarbonitePersist.Storage
 
         public async Task CopyFileToStreamAsync(object id, Stream stream, CancellationToken cancellationToken = default)
         {
-            using (FileStream sourceStream = RetrieveFileStreamFromStorage(FindFileById(id)))
-            {
-                await sourceStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
-            }
+            using FileStream sourceStream = RetrieveFileStreamFromStorage(FindFileById(id));
+            await sourceStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
         }
 
         public async Task CopyFileToStreamAsync(IReadOnlyList<object> ids, IReadOnlyList<Stream> streams, CancellationToken cancellationToken = default)
